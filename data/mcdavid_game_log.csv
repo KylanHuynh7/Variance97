@@ -1,0 +1,375 @@
+date,opponent,goals,assists,points,plus_minus,SOG,TOI,result,team_score,opp_score,game_number,game_context,season
+2024-06-08,FLA,0,0,0,-2,6,25:19,L,0,3,1,stanley_cup_finals,2023-24
+2024-06-10,FLA,0,1,1,1,3,25:59,L,1,4,2,stanley_cup_finals,2023-24
+2024-06-13,FLA,0,2,2,1,5,25:14,L,3,4,3,stanley_cup_finals,2023-24
+2024-06-15,FLA,1,3,4,2,2,17:27,W,8,1,4,stanley_cup_finals,2023-24
+2024-06-18,FLA,2,2,4,2,2,24:37,W,5,3,5,stanley_cup_finals,2023-24
+2024-06-21,FLA,0,0,0,1,0,18:58,W,5,1,6,stanley_cup_finals,2023-24
+2024-06-24,FLA,0,0,0,0,2,25:42,L,1,2,7,stanley_cup_finals,2023-24
+2025-06-04,FLA,0,2,2,0,4,31:12,W,4,3,1,stanley_cup_finals,2024-25
+2025-06-06,FLA,0,3,3,0,7,35:07,L,4,5,2,stanley_cup_finals,2024-25
+2025-06-09,FLA,0,0,0,-1,2,20:51,L,1,6,3,stanley_cup_finals,2024-25
+2025-06-12,FLA,0,1,1,-1,4,29:40,W,5,4,4,stanley_cup_finals,2024-25
+2025-06-14,FLA,1,0,1,-1,2,25:49,L,2,5,5,stanley_cup_finals,2024-25
+2025-06-17,FLA,0,0,0,-4,2,22:30,L,1,5,6,stanley_cup_finals,2024-25
+2021-10-13,VAN,0,2,2,0,2,24:18,W ,2,2,null,regular_season,2021-22
+2021-10-16,CGY,3,0,3,2,8,22:31,W,5,2,null,regular_season,2021-22
+2021-10-19,ANA,1,2,3,1,2,25:42,W ,6,5,null,regular_season,2021-22
+2021-10-21,ARI,2,1,3,0,2,15:29,W ,5,1,null,regular_season,2021-22
+2021-10-22,VEG,0,2,2,0,7,20:23,W ,5,3,null,regular_season,2021-22
+2021-10-27,PHI,1,1,2,-1,9,25:36,L ,3,5,null,regular_season,2021-22
+2021-10-30,VAN,0,1,1,-1,9,22:11,W ,2,1,null,regular_season,2021-22
+2021-11-01,SEA,0,1,1,1,4,21:26,W ,5,2,null,regular_season,2021-22
+2021-11-03,NSH,0,2,2,2,1,19:17,W,5,2,null,regular_season,2021-22
+2021-11-05,NYR,1,2,3,1,2,25:26,W ,6,5,null,regular_season,2021-22
+2021-11-09,DET,1,0,1,-1,2,25:08,L ,2,4,null,regular_season,2021-22
+2021-11-11,BOS,0,1,1,0,4,20:54,W ,5,3,null,regular_season,2021-22
+2021-11-12,BUF,0,1,1,-2,4,23:26,L ,2,3,null,regular_season,2021-22
+2021-11-14,STL,1,1,2,1,3,22:42,W,5,4,null,regular_season,2021-22
+2021-11-16,WPG,0,2,2,-1,3,24:08,L ,2,5,null,regular_season,2021-22
+2021-11-18,WPG,1,0,1,1,4,22:17,W ,1,1,null,regular_season,2021-22
+2021-11-20,CHI,1,1,2,1,2,20:33,W ,5,2,null,regular_season,2021-22
+2021-11-23,DAL,0,0,0,-1,3,21:00,L ,1,4,null,regular_season,2021-22
+2021-11-24,ARI,2,2,4,2,6,23:17,W ,5,3,null,regular_season,2021-22
+2021-11-27,VEG,0,0,0,-1,1,22:01,W ,3,2,null,regular_season,2021-22
+2021-12-01,PIT,1,3,4,5,2,20:53,W ,5,2,null,regular_season,2021-22
+2021-12-03,SEA,1,1,2,0,3,25:53,L ,3,4,null,regular_season,2021-22
+2021-12-05,LAK,0,0,0,0,4,19:35,L ,1,5,null,regular_season,2021-22
+2021-12-07,MIN,0,1,1,-1,4,22:22,L ,1,4,null,regular_season,2021-22
+2021-12-09,BOS,0,2,2,-1,4,26:47,L ,2,3,null,regular_season,2021-22
+2021-12-11,CAR,0,0,0,-2,3,22:06,L ,1,3,null,regular_season,2021-22
+2021-12-14,TOR,0,0,0,-2,2,21:21,L ,1,5,null,regular_season,2021-22
+2021-12-16,CBJ,0,2,2,1,5,20:54,W ,5,2,null,regular_season,2021-22
+2021-12-18,SEA,1,1,2,2,4,23:12,W ,5,3,null,regular_season,2021-22
+2021-12-29,STL,0,1,1,1,4,22:59,L ,2,4,null,regular_season,2021-22
+2021-12-31,NJD,2,0,2,-1,3,27:57,L ,5,6,null,regular_season,2021-22
+2022-01-01,NYI,0,1,1,0,3,22:01,L ,2,3,null,regular_season,2021-22
+2022-01-03,NYR,0,0,0,0,7,18:59,L ,1,4,null,regular_season,2021-22
+2022-01-15,OTT,0,0,0,-2,7,25:22,L,4,6,null,regular_season,2021-22
+2022-01-20,FLA,0,0,0,-1,3,20:51,L ,0,6,null,regular_season,2021-22
+2022-01-22,CGY,0,2,2,0,1,22:43,W ,5,3,null,regular_season,2021-22
+2022-01-25,VAN,1,1,2,1,6,27:28,W ,3,2,null,regular_season,2021-22
+2022-01-27,NSH,1,0,1,1,4,26:09,W ,2,2,null,regular_season,2021-22
+2022-01-29,MTL,0,0,0,1,2,17:27,W ,7,2,null,regular_season,2021-22
+2022-01-31,OTT,1,0,1,0,5,25:13,L ,2,3,null,regular_season,2021-22
+2022-02-02,WSH,1,0,1,1,3,21:32,W ,5,3,null,regular_season,2021-22
+2022-02-08,VEG,0,0,0,-2,2,20:49,L ,0,4,null,regular_season,2021-22
+2022-02-09,CHI,0,1,1,0,3,19:32,L ,1,4,null,regular_season,2021-22
+2022-02-11,NYI,0,2,2,2,3,20:35,W ,3,1,null,regular_season,2021-22
+2022-02-14,SJS,1,0,1,1,7,18:51,W ,3,0,null,regular_season,2021-22
+2022-02-15,LAK,1,1,2,1,2,21:11,W ,5,2,null,regular_season,2021-22
+2022-02-17,ANA,0,2,2,1,7,22:05,W ,7,3,null,regular_season,2021-22
+2022-02-19,WPG,1,2,3,2,6,21:45,W ,4,2,null,regular_season,2021-22
+2022-02-20,MIN,0,0,0,-1,3,20:02,L ,3,7,null,regular_season,2021-22
+2022-02-23,TBL,2,0,2,-1,5,24:02,L ,3,5,null,regular_season,2021-22
+2022-02-26,FLA,0,2,2,1,4,20:25,W ,4,3,null,regular_season,2021-22
+2022-02-27,CAR,0,0,0,0,5,21:56,L ,1,2,null,regular_season,2021-22
+2022-03-01,PHI,1,1,2,1,7,23:53,W ,3,0,null,regular_season,2021-22
+2022-03-03,CHI,0,2,2,1,2,26:44,L ,3,4,null,regular_season,2021-22
+2022-03-05,MTL,0,0,0,0,2,22:38,L ,2,5,null,regular_season,2021-22
+2022-03-07,CGY,0,0,0,-1,3,22:24,L ,1,3,null,regular_season,2021-22
+2022-03-09,WSH,1,1,2,-1,3,25:09,W ,4,3,null,regular_season,2021-22
+2022-03-12,TBL,2,0,2,2,7,21:49,W ,4,1,null,regular_season,2021-22
+2022-03-15,DET,1,1,2,1,4,22:36,W ,7,5,null,regular_season,2021-22
+2022-03-17,BUF,1,1,2,2,4,16:12,W ,6,1,null,regular_season,2021-22
+2022-03-19,NJD,1,2,3,1,4,21:08,W ,6,3,null,regular_season,2021-22
+2022-03-21,COL,0,1,1,1,2,21:46,L ,2,3,null,regular_season,2021-22
+2022-03-22,DAL,0,2,2,-1,2,24:02,L ,3,5,null,regular_season,2021-22
+2022-03-24,SJS,0,2,2,1,1,18:38,W ,5,2,null,regular_season,2021-22
+2022-03-26,CGY,0,2,2,-4,4,23:02,L ,5,9,null,regular_season,2021-22
+2022-03-28,ARI,1,0,1,2,5,19:11,W ,6,1,null,regular_season,2021-22
+2022-03-30,LAK,1,1,2,2,8,24:32,W ,3,3,null,regular_season,2021-22
+2022-04-01,STL,2,0,2,1,11,20:00,W ,6,5,null,regular_season,2021-22
+2022-04-03,ANA,1,2,3,2,5,15:25,W ,6,1,null,regular_season,2021-22
+2022-04-05,SJS,1,0,1,1,4,23:01,W ,2,1,null,regular_season,2021-22
+2022-04-07,LAK,1,1,2,0,4,21:13,W ,3,2,null,regular_season,2021-22
+2022-04-09,COL,0,0,0,0,5,24:13,L ,1,1,null,regular_season,2021-22
+2022-04-12,MIN,0,0,0,0,5,22:20,L ,1,5,null,regular_season,2021-22
+2022-04-14,NSH,0,2,2,0,3,20:52,W ,4,0,null,regular_season,2021-22
+2022-04-16,VEG,0,0,0,1,3,22:29,W ,4,0,null,regular_season,2021-22
+2022-04-20,DAL,1,2,3,2,4,19:57,W ,5,2,null,regular_season,2021-22
+2022-04-22,COL,0,3,3,2,0,21:16,W ,6,3,null,regular_season,2021-22
+2022-04-24,CBJ,0,2,2,-2,2,21:15,L ,2,5,null,regular_season,2021-22
+2022-04-26,PIT,1,3,4,2,4,19:05,W ,5,1,null,regular_season,2021-22
+2022-04-28,SJS,0,1,1,1,2,19:46,W ,5,4,null,regular_season,2021-22
+2022-05-02,LAK,1,1,2,0,3,25:33,L ,3,4,1,first_round,2021-22
+2022-05-04,LAK,0,2,2,3,2,16:52,W ,6,0,2,first_round,2021-22
+2022-05-06,LAK,0,2,2,3,3,16:18,W ,8,2,3,first_round,2021-22
+2022-05-08,LAK,0,0,0,-2,3,21:45,L ,0,4,4,first_round,2021-22
+2022-05-10,LAK,1,2,3,1,4,19:55,L ,4,5,5,first_round,2021-22
+2022-05-12,LAK,1,2,3,3,6,24:02,W ,4,2,6,first_round,2021-22
+2022-05-14,LAK,1,1,2,2,6,27:23,W ,2,0,7,first_round,2021-22
+2022-05-18,CGY,1,3,4,-1,5,25:33,L,6,9,1,second_round,2021-22
+2022-05-20,CGY,1,1,2,3,5,21:30,W ,5,3,2,second_round,2021-22
+2022-05-22,CGY,0,3,3,4,3,20:28,W ,4,1,3,second_round,2021-22
+2022-05-24,CGY,0,2,2,1,4,22:15,W ,5,3,4,second_round,2021-22
+2022-05-26,CGY,1,0,1,2,4,26:16,W ,5,4,5,second_round,2021-22
+2022-05-31,COL,1,2,3,-1,2,24:15,L ,6,8,1,conf_finals,2021-22
+2022-06-02,COL,0,0,0,-1,2,22:43,L ,0,4,2,conf_finals,2021-22
+2022-06-04,COL,1,0,1,-3,4,26:47,L ,2,4,3,conf_finals,2021-22
+2022-06-06,COL,1,2,3,1,5,26:59,L,5,6,4,conf_finals,2021-22
+2022-10-12,VAN,3,1,4,1,5,23:36,W ,5,3,null,regular_season,2022-23
+2022-10-15,CGY,1,0,1,-1,4,23:34,L ,3,4,null,regular_season,2022-23
+2022-10-18,BUF,0,1,1,0,4,26:52,L ,2,4,null,regular_season,2022-23
+2022-10-20,CAR,1,3,4,1,4,22:00,W ,6,4,null,regular_season,2022-23
+2022-10-22,STL,0,0,0,-1,2,24:30,L ,0,2,null,regular_season,2022-23
+2022-10-24,PIT,0,0,0,1,2,19:14,W ,6,3,null,regular_season,2022-23
+2022-10-26,STL,0,1,1,1,4,21:10,W ,3,1,null,regular_season,2022-23
+2022-10-27,CHI,3,1,4,0,4,21:07,W ,6,5,null,regular_season,2022-23
+2022-10-29,CGY,1,2,3,0,1,19:00,W ,3,2,null,regular_season,2022-23
+2022-11-01,NSH,2,2,4,2,8,18:29,W ,7,4,null,regular_season,2022-23
+2022-11-03,NJD,1,1,2,0,4,23:59,L ,3,4,null,regular_season,2022-23
+2022-11-05,DAL,0,1,1,-2,5,22:45,L ,2,6,null,regular_season,2022-23
+2022-11-07,WSH,1,1,2,2,5,23:57,L ,4,5,null,regular_season,2022-23
+2022-11-08,TBL,1,1,2,0,5,23:41,W ,3,2,null,regular_season,2022-23
+2022-11-10,CAR,1,1,2,-1,3,18:36,L ,2,7,null,regular_season,2022-23
+2022-11-12,FLA,0,1,1,0,4,21:47,W ,4,2,null,regular_season,2022-23
+2022-11-16,LAK,0,0,0,-1,1,22:43,L ,1,3,null,regular_season,2022-23
+2022-11-19,VEG,1,1,2,1,6,23:12,W ,4,3,null,regular_season,2022-23
+2022-11-21,NJD,0,1,1,-1,5,23:46,L ,2,5,null,regular_season,2022-23
+2022-11-23,NYI,0,0,0,-1,3,24:29,L ,0,3,null,regular_season,2022-23
+2022-11-26,NYR,0,1,1,-1,3,25:17,W ,4,3,null,regular_season,2022-23
+2022-11-28,FLA,1,2,3,2,5,26:42,W ,4,3,null,regular_season,2022-23
+2022-11-30,CHI,1,1,2,2,9,27:06,W ,5,4,null,regular_season,2022-23
+2022-12-01,MIN,1,1,2,0,2,21:12,L ,3,5,null,regular_season,2022-23
+2022-12-03,MTL,2,2,4,1,2,22:42,W ,5,3,null,regular_season,2022-23
+2022-12-05,WSH,1,0,1,-1,1,23:27,L ,2,3,null,regular_season,2022-23
+2022-12-07,ARI,2,2,4,2,5,18:32,W ,8,2,null,regular_season,2022-23
+2022-12-09,MIN,1,1,2,0,4,23:01,W ,5,2,null,regular_season,2022-23
+2022-12-12,MIN,0,1,1,-1,3,24:35,L ,1,2,null,regular_season,2022-23
+2022-12-13,NSH,1,3,4,3,6,18:31,W ,6,3,null,regular_season,2022-23
+2022-12-15,STL,1,0,1,-2,4,29:23,L ,3,3,null,regular_season,2022-23
+2022-12-17,ANA,1,1,2,-1,8,25:30,L ,3,4,null,regular_season,2022-23
+2022-12-19,NSH,0,2,2,-2,1,25:00,L ,3,4,null,regular_season,2022-23
+2022-12-21,DAL,1,0,1,1,1,20:24,W ,6,3,null,regular_season,2022-23
+2022-12-23,VAN,1,0,1,-1,4,23:43,L ,2,5,null,regular_season,2022-23
+2022-12-27,CGY,1,0,1,0,1,21:09,W ,2,1,null,regular_season,2022-23
+2022-12-30,SEA,1,4,5,3,3,16:01,W ,7,2,null,regular_season,2022-23
+2022-12-31,WPG,0,0,0,-1,4,23:50,L ,1,2,null,regular_season,2022-23
+2023-01-03,SEA,1,0,1,-1,6,21:18,L ,2,5,null,regular_season,2022-23
+2023-01-05,NYI,0,2,2,1,3,24:50,W ,4,2,null,regular_season,2022-23
+2023-01-07,COL,0,1,1,-3,4,26:04,L ,2,3,null,regular_season,2022-23
+2023-01-09,LAK,1,0,1,-1,4,22:10,L ,3,6,null,regular_season,2022-23
+2023-01-11,ANA,1,1,2,1,8,15:31,W ,6,2,null,regular_season,2022-23
+2023-01-13,SJS,2,1,3,0,5,18:18,W ,7,1,null,regular_season,2022-23
+2023-01-14,VEG,0,1,1,1,8,22:44,W ,4,3,null,regular_season,2022-23
+2023-01-17,SEA,1,0,1,1,4,22:38,W ,5,2,null,regular_season,2022-23
+2023-01-19,TBL,1,1,2,-2,6,23:44,W ,5,3,null,regular_season,2022-23
+2023-01-21,VAN,1,1,2,0,7,23:49,W ,4,2,null,regular_season,2022-23
+2023-01-25,CBJ,0,1,1,-1,3,23:59,L,2,3,null,regular_season,2022-23
+2023-01-28,CHI,1,2,3,3,6,20:58,W ,7,3,null,regular_season,2022-23
+2023-02-07,DET,0,1,1,1,3,23:29,W ,5,2,null,regular_season,2022-23
+2023-02-09,PHI,0,1,1,1,5,23:55,L ,1,1,null,regular_season,2022-23
+2023-02-11,OTT,1,2,3,1,4,22:01,W ,6,3,null,regular_season,2022-23
+2023-02-12,MTL,0,0,0,-3,7,23:51,L ,2,6,null,regular_season,2022-23
+2023-02-15,DET,0,2,2,1,8,26:11,L ,4,4,null,regular_season,2022-23
+2023-02-17,NYR,0,2,2,-1,4,23:35,L ,4,4,null,regular_season,2022-23
+2023-02-19,COL,0,1,1,-2,4,24:45,L ,5,6,null,regular_season,2022-23
+2023-02-21,PHI,2,1,3,2,9,25:59,W ,4,2,null,regular_season,2022-23
+2023-02-23,PIT,2,2,4,2,7,19:32,W ,7,2,null,regular_season,2022-23
+2023-02-25,CBJ,2,2,4,3,7,22:50,L ,5,6,null,regular_season,2022-23
+2023-02-27,BOS,2,0,2,0,5,24:27,L ,2,3,null,regular_season,2022-23
+2023-03-01,TOR,2,1,3,2,3,21:44,W ,5,2,null,regular_season,2022-23
+2023-03-03,WPG,0,3,3,-1,6,20:27,W ,6,3,null,regular_season,2022-23
+2023-03-04,WPG,0,1,1,-2,4,23:23,L ,5,7,null,regular_season,2022-23
+2023-03-06,BUF,2,0,2,2,3,19:58,W ,3,2,null,regular_season,2022-23
+2023-03-09,BOS,0,0,0,-1,1,21:35,W ,3,2,null,regular_season,2022-23
+2023-03-11,TOR,1,2,3,1,3,23:53,L ,4,7,null,regular_season,2022-23
+2023-03-14,OTT,1,1,2,1,4,20:24,W ,6,3,null,regular_season,2022-23
+2023-03-16,DAL,1,1,2,1,3,21:12,W ,4,1,null,regular_season,2022-23
+2023-03-18,SEA,1,2,3,2,1,21:04,W ,6,4,null,regular_season,2022-23
+2023-03-20,SJS,0,2,2,2,7,28:06,W ,5,4,null,regular_season,2022-23
+2023-03-22,ARI,2,0,2,0,7,25:41,W ,4,3,null,regular_season,2022-23
+2023-03-25,VEG,0,1,1,0,2,23:25,L ,3,4,null,regular_season,2022-23
+2023-03-27,ARI,0,1,1,-2,3,20:17,W ,5,4,null,regular_season,2022-23
+2023-03-28,VEG,0,3,3,0,0,17:50,W ,7,4,null,regular_season,2022-23
+2023-03-30,LAK,1,0,1,1,3,21:25,W ,2,0,null,regular_season,2022-23
+2023-04-01,ANA,1,1,2,2,5,18:09,W ,6,0,null,regular_season,2022-23
+2023-04-04,LAK,0,1,1,1,3,22:47,W ,3,1,null,regular_season,2022-23
+2023-04-05,ANA,0,1,1,0,4,18:36,W ,3,1,null,regular_season,2022-23
+2023-04-08,SJS,2,1,3,4,6,16:57,W ,6,1,null,regular_season,2022-23
+2023-04-11,COL,0,1,1,0,7,22:18,W ,2,1,null,regular_season,2022-23
+2023-04-13,SJS,0,1,1,0,5,15:16,W ,5,2,null,regular_season,2022-23
+2023-04-17,LAK,0,0,0,-2,5,25:24,L,3,4,1,first_round,2022-23
+2023-04-19,LAK,0,1,1,0,6,21:27,W ,4,2,2,first_round,2022-23
+2023-04-21,LAK,2,0,2,-1,7,26:43,L ,2,3,3,first_round,2022-23
+2023-04-23,LAK,0,3,3,3,2,30:22,W ,5,4,4,first_round,2022-23
+2023-04-25,LAK,0,2,2,-2,4,19:47,W ,6,3,5,first_round,2022-23
+2023-04-29,LAK,1,1,2,1,3,27:16,W ,5,4,6,first_round,2022-23
+2023-05-03,VEG,0,2,2,1,4,24:01,L ,4,6,1,second_round,2022-23
+2023-05-06,VEG,2,1,3,0,3,18:31,W ,5,1,2,second_round,2022-23
+2023-05-08,VEG,0,0,0,-2,3,20:45,L ,1,5,3,second_round,2022-23
+2023-05-10,VEG,0,2,2,1,4,21:09,W ,4,1,4,second_round,2022-23
+2023-05-12,VEG,2,0,2,0,6,25:13,L ,3,4,5,second_round,2022-23
+2023-05-14,VEG,1,0,1,0,4,24:00,L ,2,5,6,second_round,2022-23
+2023-10-11,VAN,0,1,1,-3,2,20:13,L ,1,8,null,regular_season,2023-24
+2023-10-14,VAN,1,1,2,-1,8,26:08,L ,3,4,null,regular_season,2023-24
+2023-10-17,NSH,1,1,2,1,2,17:18,W ,6,1,null,regular_season,2023-24
+2023-10-19,PHI,0,1,1,-1,0,18:01,L ,1,4,null,regular_season,2023-24
+2023-10-21,WPG,0,2,2,1,1,20:48,L ,2,3,null,regular_season,2023-24
+2023-10-29,CGY,0,1,1,2,2,23:26,W ,5,2,null,regular_season,2023-24
+2023-11-02,DAL,0,0,0,-1,5,25:35,L ,3,4,null,regular_season,2023-24
+2023-11-04,NSH,0,1,1,-2,3,22:44,L ,2,5,null,regular_season,2023-24
+2023-11-06,VAN,0,0,0,0,3,22:40,L ,2,6,null,regular_season,2023-24
+2023-11-09,SJS,0,0,0,0,4,24:33,L ,2,3,null,regular_season,2023-24
+2023-11-11,SEA,0,0,0,0,2,20:41,W ,4,1,null,regular_season,2023-24
+2023-11-13,NYI,1,1,2,-1,5,19:31,W ,4,1,null,regular_season,2023-24
+2023-11-15,SEA,1,0,1,3,3,23:36,W ,4,3,null,regular_season,2023-24
+2023-11-18,TBL,0,0,0,-2,3,23:00,L ,4,6,null,regular_season,2023-24
+2023-11-20,FLA,2,0,2,-1,3,24:00,L ,3,5,null,regular_season,2023-24
+2023-11-22,CAR,0,1,1,-3,1,19:40,L ,3,6,null,regular_season,2023-24
+2023-11-24,WSH,0,4,4,1,2,18:36,W ,5,0,null,regular_season,2023-24
+2023-11-26,ANA,1,4,5,3,4,19:03,W ,8,2,null,regular_season,2023-24
+2023-11-28,VEG,1,2,3,0,2,22:07,W ,4,4,null,regular_season,2023-24
+2023-11-30,WPG,0,1,1,0,1,22:37,W ,3,1,null,regular_season,2023-24
+2023-12-06,CAR,0,3,3,3,2,18:31,W ,6,1,null,regular_season,2023-24
+2023-12-08,MIN,1,1,2,1,4,21:44,W ,4,3,null,regular_season,2023-24
+2023-12-10,NJD,1,1,2,2,3,21:45,W ,4,1,null,regular_season,2023-24
+2023-12-12,CHI,0,2,2,0,3,20:23,W ,4,1,null,regular_season,2023-24
+2023-12-14,TBL,1,1,2,-1,7,22:55,L ,4,7,null,regular_season,2023-24
+2023-12-16,FLA,0,1,1,-1,5,19:52,L ,1,5,null,regular_season,2023-24
+2023-12-19,NYI,0,0,0,-1,3,24:54,L ,1,3,null,regular_season,2023-24
+2023-12-21,NJD,1,1,2,2,2,20:02,W ,6,3,null,regular_season,2023-24
+2023-12-22,NYR,0,1,1,0,1,21:52,W ,4,3,null,regular_season,2023-24
+2023-12-28,SJS,0,1,1,3,1,16:05,W ,5,0,null,regular_season,2023-24
+2023-12-30,LAK,1,1,2,1,5,25:52,W ,2,2,null,regular_season,2023-24
+2023-12-31,ANA,0,1,1,1,2,19:11,W ,7,2,null,regular_season,2023-24
+2024-01-02,PHI,1,4,5,3,2,16:35,W ,5,2,null,regular_season,2023-24
+2024-01-06,OTT,0,1,1,1,8,21:03,W,3,1,null,regular_season,2023-24
+2024-01-09,CHI,1,0,1,0,3,22:37,W ,2,1,null,regular_season,2023-24
+2024-01-11,DET,1,0,1,2,7,23:06,W ,3,2,null,regular_season,2023-24
+2024-01-13,MTL,0,1,1,0,1,26:10,W ,2,1,null,regular_season,2023-24
+2024-01-16,TOR,0,1,1,1,5,22:34,W ,4,2,null,regular_season,2023-24
+2024-01-18,SEA,0,1,1,-1,5,20:55,W ,4,2,null,regular_season,2023-24
+2024-01-20,CGY,0,0,0,0,2,23:14,W ,3,1,null,regular_season,2023-24
+2024-01-23,CBJ,1,0,1,1,5,21:45,W ,4,1,null,regular_season,2023-24
+2024-01-25,CHI,2,1,3,2,7,20:36,W ,3,0,null,regular_season,2023-24
+2024-01-27,NSH,1,3,4,2,5,19:14,W ,4,1,null,regular_season,2023-24
+2024-02-06,VEG,1,0,1,-1,8,22:26,L ,1,3,null,regular_season,2023-24
+2024-02-09,ANA,0,3,3,2,3,20:18,W ,5,3,null,regular_season,2023-24
+2024-02-10,LAK,0,0,0,-2,2,23:09,L ,0,4,null,regular_season,2023-24
+2024-02-13,DET,0,6,6,6,2,19:03,W ,8,4,null,regular_season,2023-24
+2024-02-15,STL,0,3,3,-2,2,18:47,L ,3,6,null,regular_season,2023-24
+2024-02-17,DAL,0,1,1,2,3,22:48,W ,4,3,null,regular_season,2023-24
+2024-02-19,ARI,0,2,2,1,1,20:38,W ,6,3,null,regular_season,2023-24
+2024-02-21,BOS,0,2,2,2,4,25:34,L ,5,6,null,regular_season,2023-24
+2024-02-23,MIN,0,2,2,-4,6,23:12,L ,2,4,null,regular_season,2023-24
+2024-02-24,CGY,0,2,2,-2,2,19:41,L ,3,6,null,regular_season,2023-24
+2024-02-26,LAK,0,2,2,1,3,20:25,W ,4,2,null,regular_season,2023-24
+2024-02-28,STL,1,2,3,1,4,24:49,W ,3,2,null,regular_season,2023-24
+2024-03-02,SEA,0,1,1,1,2,22:45,W ,2,1,null,regular_season,2023-24
+2024-03-03,PIT,1,1,2,3,5,17:18,W ,6,1,null,regular_season,2023-24
+2024-03-05,BOS,0,2,2,2,7,23:01,W ,2,1,null,regular_season,2023-24
+2024-03-07,CBJ,0,1,1,0,2,24:18,L ,2,4,null,regular_season,2023-24
+2024-03-09,BUF,0,0,0,-1,2,23:05,L ,2,2,null,regular_season,2023-24
+2024-03-10,PIT,1,2,3,3,4,18:55,W ,4,0,null,regular_season,2023-24
+2024-03-13,WSH,1,2,3,2,2,18:58,W ,7,2,null,regular_season,2023-24
+2024-03-16,COL,0,0,0,-2,5,24:04,L ,2,3,null,regular_season,2023-24
+2024-03-19,MTL,1,1,2,0,9,24:09,W ,3,2,null,regular_season,2023-24
+2024-03-21,BUF,0,4,4,2,0,19:41,W ,8,3,null,regular_season,2023-24
+2024-03-23,TOR,0,3,3,-1,1,23:30,L ,3,6,null,regular_season,2023-24
+2024-03-24,OTT,0,2,2,-1,3,22:57,L ,3,5,null,regular_season,2023-24
+2024-03-26,WPG,0,2,2,-1,1,20:38,W ,4,3,null,regular_season,2023-24
+2024-03-28,LAK,1,2,3,3,1,21:34,W ,4,1,null,regular_season,2023-24
+2024-03-30,ANA,2,1,3,2,7,15:49,W ,6,1,null,regular_season,2023-24
+2024-04-01,STL,0,1,1,-1,3,21:44,L ,2,3,null,regular_season,2023-24
+2024-04-03,DAL,0,0,0,0,8,20:05,L ,0,5,null,regular_season,2023-24
+2024-04-05,COL,2,0,2,2,9,20:11,W ,6,2,null,regular_season,2023-24
+2024-04-06,CGY,0,2,2,0,3,20:39,W ,4,2,null,regular_season,2023-24
+2024-04-15,SJS,1,1,2,3,3,15:45,W ,9,2,null,regular_season,2023-24
+2024-04-17,ARI,0,0,0,-2,2,18:10,L ,2,5,null,regular_season,2023-24
+2024-04-22,LAK,0,5,5,1,3,18:47,W ,7,4,1,first_round,2023-24
+2024-04-24,LAK,0,1,1,-1,1,22:21,L ,4,5,2,first_round,2023-24
+2024-04-26,LAK,1,2,3,1,5,18:32,W ,6,1,3,first_round,2023-24
+2024-04-28,LAK,0,1,1,0,1,21:57,W ,1,0,4,first_round,2023-24
+2024-05-01,LAK,0,2,2,2,4,23:36,W ,4,3,5,first_round,2023-24
+2024-05-08,VAN,0,1,1,-1,0,24:03,L ,4,5,1,second_round,2023-24
+2024-05-10,VAN,1,3,4,2,5,28:12,W ,4,3,2,second_round,2023-24
+2024-05-12,VAN,0,0,0,0,4,29:42,L ,3,4,3,second_round,2023-24
+2024-05-14,VAN,0,1,1,0,4,23:12,W ,3,2,4,second_round,2023-24
+2024-05-16,VAN,0,0,0,-2,2,23:25,L ,2,3,5,second_round,2023-24
+2024-05-18,VAN,0,3,3,3,2,20:59,W ,5,1,6,second_round,2023-24
+2024-05-20,VAN,0,0,0,0,1,20:31,W ,3,2,7,second_round,2023-24
+2024-05-23,DAL,1,1,2,2,4,27:04,W ,3,2,1,conf_finals,2023-24
+2024-05-25,DAL,0,0,0,-1,1,24:29,L ,1,3,2,conf_finals,2023-24
+2024-05-27,DAL,1,1,2,-1,6,21:46,L ,3,5,3,conf_finals,2023-24
+2024-05-29,DAL,0,3,3,2,5,19:50,W ,5,2,4,conf_finals,2023-24
+2024-05-31,DAL,0,1,1,0,5,20:22,W ,3,1,5,conf_finals,2023-24
+2024-06-02,DAL,1,1,2,0,2,23:44,W ,2,1,6,conf_finals,2023-24
+2024-10-09,WPG,0,0,0,-2,0,20:49,L ,0,6,null,regular_season,2024-25
+2024-10-12,CHI,0,1,1,-1,3,23:32,L ,2,5,null,regular_season,2024-25
+2024-10-13,CGY,0,1,1,-2,5,20:27,L ,1,4,null,regular_season,2024-25
+2024-10-15,PHI,0,2,2,2,1,24:06,W,4,3,null,regular_season,2024-25
+2024-10-17,NSH,1,0,1,2,4,21:11,W ,4,2,null,regular_season,2024-25
+2024-10-19,DAL,0,1,1,0,3,22:35,L ,1,4,null,regular_season,2024-25
+2024-10-22,CAR,2,0,2,0,5,25:37,L ,2,3,null,regular_season,2024-25
+2024-10-25,PIT,0,0,0,2,5,20:07,W ,4,0,null,regular_season,2024-25
+2024-10-27,DET,0,2,2,3,4,22:49,W ,3,2,null,regular_season,2024-25
+2024-10-28,CBJ,0,0,0,0,0,0:37,L ,1,6,null,regular_season,2024-25
+2024-11-06,VEG,0,0,0,-1,2,21:02,L ,2,4,null,regular_season,2024-25
+2024-11-09,VAN,1,2,3,1,4,19:56,W ,7,3,null,regular_season,2024-25
+2024-11-12,NYI,1,3,4,1,8,20:55,W ,4,3,null,regular_season,2024-25
+2024-11-14,NSH,1,1,2,1,8,24:57,W ,3,2,null,regular_season,2024-25
+2024-11-16,TOR,1,1,2,-3,4,24:46,L ,3,4,null,regular_season,2024-25
+2024-11-18,MTL,0,0,0,-2,1,22:42,L ,0,3,null,regular_season,2024-25
+2024-11-19,OTT,2,1,3,3,5,22:08,W ,5,2,null,regular_season,2024-25
+2024-11-21,MIN,0,1,1,0,4,24:40,L ,3,5,null,regular_season,2024-25
+2024-11-23,NYR,2,1,3,3,3,20:04,W ,6,2,null,regular_season,2024-25
+2024-11-29,UTA,1,1,2,-3,6,23:46,W ,4,3,null,regular_season,2024-25
+2024-11-30,COL,0,1,1,1,4,20:21,W ,4,1,null,regular_season,2024-25
+2024-12-03,VEG,0,0,0,0,4,24:58,L ,0,1,null,regular_season,2024-25
+2024-12-05,CBJ,0,4,4,2,1,20:36,W,6,3,null,regular_season,2024-25
+2024-12-07,STL,1,1,2,0,2,21:42,W ,4,2,null,regular_season,2024-25
+2024-12-10,TBL,1,0,1,1,4,22:03,W ,2,1,null,regular_season,2024-25
+2024-12-12,MIN,0,2,2,1,2,19:54,W ,7,1,null,regular_season,2024-25
+2024-12-14,VEG,0,1,1,0,2,20:24,W ,6,3,null,regular_season,2024-25
+2024-12-16,FLA,0,3,3,-2,0,23:00,L ,5,6,null,regular_season,2024-25
+2024-12-19,BOS,1,0,1,2,2,24:47,W ,3,2,null,regular_season,2024-25
+2024-12-21,SJS,0,3,3,3,2,25:19,W ,3,2,null,regular_season,2024-25
+2024-12-22,OTT,0,1,1,0,2,22:39,W ,3,1,null,regular_season,2024-25
+2024-12-28,LAK,0,1,1,0,0,23:27,L ,3,4,null,regular_season,2024-25
+2024-12-29,ANA,0,2,2,-3,2,21:20,L ,3,5,null,regular_season,2024-25
+2024-12-31,UTA,0,2,2,2,2,21:11,W ,4,1,null,regular_season,2024-25
+2025-01-03,ANA,0,0,0,0,0,22:44,W ,3,2,null,regular_season,2024-25
+2025-01-04,SEA,0,0,0,1,6,22:10,W ,4,2,null,regular_season,2024-25
+2025-01-07,BOS,1,0,1,0,5,18:04,W ,4,0,null,regular_season,2024-25
+2025-01-09,PIT,0,3,3,0,3,26:55,L ,3,5,null,regular_season,2024-25
+2025-01-11,CHI,0,0,0,-2,1,21:50,W ,4,3,null,regular_season,2024-25
+2025-01-13,LAK,1,0,1,1,5,24:18,W ,1,0,null,regular_season,2024-25
+2025-01-15,MIN,2,1,3,1,3,21:38,W ,5,3,null,regular_season,2024-25
+2025-01-16,COL,1,1,2,1,2,24:17,W ,4,3,null,regular_season,2024-25
+2025-01-18,VAN,0,1,1,1,2,24:30,L ,2,3,null,regular_season,2024-25
+2025-01-27,SEA,1,0,1,1,2,21:00,W ,4,2,null,regular_season,2024-25
+2025-01-30,DET,0,1,1,-1,5,25:55,L ,2,2,null,regular_season,2024-25
+2025-02-01,TOR,0,0,0,0,9,25:25,L ,3,4,null,regular_season,2024-25
+2025-02-04,STL,1,2,3,1,1,24:43,W ,3,2,null,regular_season,2024-25
+2025-02-05,CHI,0,1,1,-2,2,21:46,W ,4,3,null,regular_season,2024-25
+2025-02-07,COL,0,0,0,-3,5,24:04,L,4,5,null,regular_season,2024-25
+2025-02-22,PHI,0,0,0,-3,2,19:59,L ,3,6,null,regular_season,2024-25
+2025-02-23,WSH,0,1,1,-3,0,20:17,L ,3,7,null,regular_season,2024-25
+2025-02-25,TBL,0,1,1,-1,2,20:30,L ,1,4,null,regular_season,2024-25
+2025-02-27,FLA,0,1,1,0,2,22:46,L ,3,4,null,regular_season,2024-25
+2025-03-01,CAR,0,1,1,0,4,24:42,W ,3,1,null,regular_season,2024-25
+2025-03-04,ANA,1,1,2,-2,5,21:59,L ,2,6,null,regular_season,2024-25
+2025-03-06,MTL,0,2,2,0,3,26:58,W ,3,2,null,regular_season,2024-25
+2025-03-08,DAL,1,1,2,2,4,20:57,W ,5,4,null,regular_season,2024-25
+2025-03-10,BUF,0,1,1,-1,2,26:01,L ,2,3,null,regular_season,2024-25
+2025-03-13,NJD,0,2,2,2,2,25:06,L ,2,3,null,regular_season,2024-25
+2025-03-14,NYI,0,1,1,1,1,24:59,W ,2,1,null,regular_season,2024-25
+2025-03-16,NYR,1,0,1,1,1,20:42,W ,3,1,null,regular_season,2024-25
+2025-03-18,UTA,1,2,3,4,4,16:46,W ,7,1,null,regular_season,2024-25
+2025-03-20,WPG,0,1,1,1,0,14:59,L ,3,4,null,regular_season,2024-25
+2025-04-09,STL,0,3,3,3,0,20:35,W ,4,3,null,regular_season,2024-25
+2025-04-11,SJS,0,4,4,2,4,23:37,W ,4,2,null,regular_season,2024-25
+2025-04-13,WPG,0,2,2,3,4,19:56,W ,4,1,null,regular_season,2024-25
+2025-04-16,SJS,0,1,1,1,1,17:31,W ,3,0,null,regular_season,2024-25
+2025-02-12,SWE,0,1,1,-1,null,21:26,W,4,3,1,four_nations_faceoff_group,2024-25
+2025-02-15,USA,1,0,1,-1,null,22:44,L,1,3,2,four_nations_faceoff_group,2024-25
+2025-02-17,FIN,1,1,2,1,null,16:29,W,5,3,3,four_nations_faceoff_group,2024-25
+2025-02-20,USA,1,0,1,0,null,23:05,W,3,2,4,four_nations_faceoff_finals,2024-25
+2026-02-12,CZH,0,3,3,2,null,18:04,W,5,0,1,olympics_exhibition,2025-26
+2026-02-13,SUI,1,2,3,3,null,14:22,W,5,1,2,olympics_exhibition,2025-26
+2026-02-15,FRA,1,2,3,2,null,17:50,W,10,2,3,olympics_exhibition,2025-26
+2026-02-18,CZH,0,2,2,2,null,21:48,W,4,3,4,olympics_quarterfinals,2025-26
+2026-02-20,FIN,0,2,2,-1,null,25:20,W,3,2,5,olympics_semifinals,2025-26
+2026-02-22,USA,0,0,0,-2,null,24:01,L,1,2,6,olympics_finals,2025-26
