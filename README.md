@@ -16,8 +16,8 @@ This is just another tale of a superstar who just cannot seem to win the big gam
    suppress him in ways that don't appear in earlier rounds?
 
 ## Data Sources
-- Hockey Reference[https://www.hockey-reference.com/players/m/mcdavco01.html]
-- NHL.com[https://www.nhl.com/events/2025-4-nations-face-off]
+- [Hockey Reference](https://www.hockey-reference.com/players/m/mcdavco01.html)
+- [NHL.com](https://www.nhl.com/events/2025-4-nations-face-off)
 - [Olympics.com](https://www.olympics.com/en/milano-cortina-2026/results/iho/m/team6-------------/fnl-/000100--/team-playerstatistics)
 
 ## Tech Stack
