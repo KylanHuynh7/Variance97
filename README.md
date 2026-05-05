@@ -28,6 +28,7 @@ This is just another tale of a superstar who just cannot seem to win the big gam
 - Streamlit (planned)
 
 ## Repository Structure
+```
 data/
     mcdavid_game_log.csv
     mcdavid_game_log_clean.csv
@@ -35,7 +36,7 @@ notebooks/
     01_data_loading_and_exploration.ipynb
     02_statistical_validation.ipynb
     03_ml_model.ipynb
-    
+```    
 ## Project Roadmap
 
 ### ✅ Phase 1 — Exploratory Data Analysis
