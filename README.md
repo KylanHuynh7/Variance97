@@ -29,9 +29,13 @@ This is just another tale of a superstar who just cannot seem to win the big gam
 
 ## Repository Structure
 data/
+    .DS_Store
     mcdavid_game_log.csv
+    mcdavid_game_log_clean.csv
 notebooks/
-    (analysis notebooks coming soon)
+    01_data_loading_and_exploration.ipynb
+    02_statistical_validation.ipynb
+    03_ml_model.ipynb
 ## Project Roadmap
 
 ### ✅ Phase 1 — Exploratory Data Analysis
@@ -39,18 +43,18 @@ Game log data collection across 4 NHL seasons, Stanley Cup Finals,
 Four Nations Face-Off, and 2026 Winter Olympics. Hypothesis testing 
 through visualization and interpretation across three acts.
 
-### 🔄 Phase 2 — Statistical Validation (In Progress)
+### ✅ Phase 2 — Statistical Validation (In Progress)
 Formal hypothesis testing using t-tests to determine whether observed 
 performance differences are statistically significant.
 
-### ⬜ Phase 3 — Machine Learning Model
+### ✅ Phase 3 — Machine Learning Model
 Logistic regression classifier predicting McDavid's performance 
 in high stakes games based on engineered features.
 
-### ⬜ Phase 4 — Interactive Dashboard
-Streamlit web application deploying the trained model as a 
-live prediction tool.
-
-### ⬜ Phase 5 — Automated Data Pipeline
+### 🔄  Phase 4 — Automated Data Pipeline (In Progress)
 NHL API integration for automatic dataset updates as new 
 games are played.
+
+### ⬜ Phase 5 — Interactive Dashboard
+Streamlit web application deploying the trained model as a 
+live prediction tool.
