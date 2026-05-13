@@ -69,7 +69,7 @@ Idempotent — running with no new games reports `+0` and exits cleanly. Safe to
 
 Phase 5 ships an interactive Streamlit dashboard built around the reframed thesis. It does not predict whether McDavid will go pointless tonight — that would oversell what the data supports. Instead it surfaces the headline finding (peer comparison vs MacKinnon), the three-act narrative, per-game feature contributions from the Phase 3 model, and the limitations.
 
-- **Live URL:** *(deploy to [Streamlit Community Cloud](https://share.streamlit.io/) and add the link here)*
+- **Live URL:** *(https://variance97-s26u7gyazbqesy5jvmhggw.streamlit.app/)*
 
 ### Run locally
 
@@ -79,15 +79,6 @@ streamlit run app/Home.py
 ```
 
 The app reads the clean CSVs from `data/` directly — no API calls happen from the app itself. Phase 4's pipeline keeps those CSVs fresh.
-
-### Deploy to Streamlit Community Cloud
-
-1. Push this repo to GitHub.
-2. At [share.streamlit.io](https://share.streamlit.io/), connect the repo and set:
-   - Main file path: `app/Home.py`
-   - Python version: `3.11+`
-3. Streamlit auto-detects `requirements.txt` at the repo root.
-4. Future pushes to `main` trigger automatic redeploys — pair with the Phase 4 pipeline to keep the dashboard live.
 
 ## Tech stack
 
