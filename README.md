@@ -27,11 +27,11 @@ Four formal tests with **effect sizes (Cohen's d) alongside p-values** and **Bon
 ### Phase 3 — Feature Attribution (`03_ml_model.ipynb`)
 Reframed from "logistic regression predicting pointless games" to **Ridge regression on points/game with real gameplay features**: `opp_ga_per_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`. Scoped to NHL games only. The result that matters: when `game_context_stanley_cup_finals` has to compete against gameplay features instead of standing alone, **its coefficient drops from +0.67 (original) to roughly −0.06.** The variance the original model attributed to "Stanley Cup Finals" reroutes to `game_number` (late-series fatigue) and `opp_ga_per_game` (opponent quality). The "Stanley Cup Finals effect" was largely a late-series + tough-defense effect masquerading as a context label.
 
-### Phase 4 — NHL API Pipeline (`04_nhl_api_pipeline.ipynb`) — in progress
-Automating dataset updates from `api-web.nhle.com`.
+### Phase 4 — NHL API Pipeline (`04_nhl_api_pipeline.ipynb`)
+Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of McDavid + MacKinnon `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` are populated), standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
 
-### Phase 5 — Interactive Dashboard — planned
-Streamlit app built around the reframed thesis. Should expose feature contributions for individual games, not present a single point estimate as a confident prediction.
+### Phase 5 — Interactive Dashboard (`app/`)
+Multi-page Streamlit app built around the reframed thesis, not a point-prediction toy. `Home.py` opens with the headline (Four Nations win, Olympic record, McDavid's SCF drop is smaller than MacKinnon's). Pages: `1_Three_Acts` (Playoffs / Four Nations / Olympics, interactive), `2_Peer_Comparison` (the strongest finding, McDavid vs MacKinnon by context), `3_Feature_Contributions` (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), `4_Limitations` (Florida confound, Hellebuyck n=3), and `5_Pipeline_Status` (latest game date, row count, CSV mtime). The app only reads the clean CSVs — no API calls happen from the app itself; Phase 4 owns all external I/O.
 
 ## Data
 
@@ -129,4 +129,4 @@ README.md
 
 ## Honest summary
 
-The project's most interesting finding is the one that contradicts its own original framing: **McDavid's individual Stanley Cup Finals production is not unusually low for an elite forward** — MacKinnon, who actually won, dropped twice as much. Where the predictive signal *does* live, once real gameplay features are introduced, is **late-in-series fatigue (`game_number`) and opponent defensive quality (`opp_ga_per_game`)** — not the "championship" label. That is a narrower, defensible claim, and it is the claim Phase 4 and Phase 5 should be built around.
+The project's most interesting finding is the one that contradicts its own original framing: **McDavid's individual Stanley Cup Finals production is not unusually low for an elite forward** — MacKinnon, who actually won, dropped twice as much. Where the predictive signal *does* live, once real gameplay features are introduced, is **late-in-series fatigue (`game_number`) and opponent defensive quality (`opp_ga_per_game`)** — not the "championship" label. That is the narrower, defensible claim Phase 4's pipeline keeps fresh and Phase 5's dashboard puts in front of a reader inside 30 seconds.
