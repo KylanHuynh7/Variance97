@@ -30,8 +30,13 @@ Reframed from "logistic regression predicting pointless games" to **Ridge regres
 ### Phase 4 — NHL API Pipeline (`04_nhl_api_pipeline.ipynb`)
 Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of McDavid + MacKinnon `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` are populated), standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
 
-### Phase 5 — Interactive Dashboard (`app/`)
-Multi-page Streamlit app built around the reframed thesis, not a point-prediction toy. `Home.py` opens with the headline (Four Nations win, Olympic record, McDavid's SCF drop is smaller than MacKinnon's). Pages: `1_Three_Acts` (Playoffs / Four Nations / Olympics, interactive), `2_Peer_Comparison` (the strongest finding, McDavid vs MacKinnon by context), `3_Feature_Contributions` (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), `4_Limitations` (Florida confound, Hellebuyck n=3), and `5_Pipeline_Status` (latest game date, row count, CSV mtime). The app only reads the clean CSVs — no API calls happen from the app itself; Phase 4 owns all external I/O.
+### Phase 5 — Interactive Dashboard (`web/`, with `app/` as fallback)
+Six-page dashboard built around the reframed thesis, not a point-prediction toy. It opens with the headline (Four Nations win, Olympic record, McDavid's SCF drop is smaller than MacKinnon's). Pages: **Three Acts** (Playoffs / Four Nations / Olympics, interactive), **Peer Comparison** (the strongest finding, McDavid vs MacKinnon by context), **Feature Contributions** (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), **Limitations** (Florida confound, Hellebuyck n=3), and **Pipeline Status** (latest game date, row count, CSV mtime).
+
+The dashboard exists in two forms, both driven by the same clean CSVs. No API calls happen from either — Phase 4 owns all external I/O.
+
+- **`web/` — the deployed site (Next.js, static).** What's live. Every number, including the Ridge fit, is precomputed at build time by `data/build/export_web.py`, so the site is pure static files: no Python at request time and no cold start.
+- **`app/` — the original Streamlit app.** Kept as a working local view and as the contingency path if the hosted site is ever unavailable. `export_web.py --verify` cross-checks its model against the exported one, so the two can't silently drift.
 
 ## Data
 
@@ -60,31 +65,65 @@ Rule logic lives in `data/build/apply_features.py`; results are materialized int
 ```bash
 bash scripts/run_update.sh           # one-shot CLI wrapper
 # or, equivalently:
-python3 data/build/update_all.py
+python3 data/build/update_all.py     # 1. refresh the CSVs from the NHL API
+python3 data/build/export_web.py     # 2. recompute web/public/data.json
+```
+
+Step 2 matters: the deployed site reads the committed `web/public/data.json`, not the CSVs. Refreshing the CSVs without re-exporting leaves the site showing stale numbers. `scripts/run_update.sh` does both.
+
+Publish a refresh:
+
+```bash
+bash scripts/run_update.sh
+git add data web/public/data.json
+git commit -m "data: refresh" && git push   # push triggers the redeploy
 ```
 
 Idempotent — running with no new games reports `+0` and exits cleanly. Safe to put on a daily cron during the season.
 
 ## Live dashboard
 
-Phase 5 ships an interactive Streamlit dashboard built around the reframed thesis. It does not predict whether McDavid will go pointless tonight — that would oversell what the data supports. Instead it surfaces the headline finding (peer comparison vs MacKinnon), the three-act narrative, per-game feature contributions from the Phase 3 model, and the limitations.
+Phase 5 ships an interactive dashboard built around the reframed thesis. It does not predict whether McDavid will go pointless tonight — that would oversell what the data supports. Instead it surfaces the headline finding (peer comparison vs MacKinnon), the three-act narrative, per-game feature contributions from the Phase 3 model, and the limitations.
 
-- **Live URL:** *(https://variance97-s26u7gyazbqesy5jvmhggw.streamlit.app/)*
+- **Live URL:** https://variance97.vercel.app
 
-### Run locally
+The site is a static export served from a CDN — there is no server to wake up and no cold start.
+
+### Deployment
+
+Hosted on Vercel, connected to this repo (project `variance97`, Root Directory `web`, production branch `main`). Pushing to `main` rebuilds and redeploys automatically. To deploy by hand instead:
+
+```bash
+cd web && npx vercel deploy --prod
+```
+
+### Run the site locally
+
+```bash
+cd web
+npm install
+npm run dev          # http://localhost:3000
+```
+
+`web/public/data.json` is committed, so the site builds without Python. Regenerate it after a data refresh with `npm run data` (or the pipeline wrapper below).
+
+### Run the Streamlit fallback
+
+Kept as the contingency path and for local iteration on the analysis:
 
 ```bash
 pip install -r requirements.txt
 streamlit run app/Home.py
 ```
 
-The app reads the clean CSVs from `data/` directly — no API calls happen from the app itself. Phase 4's pipeline keeps those CSVs fresh.
+Both read the same clean CSVs from `data/`. Phase 4's pipeline keeps those fresh.
 
 ## Tech stack
 
 - Python (`pandas`, `numpy`, `scipy`, `scikit-learn`)
 - Jupyter (analysis notebooks)
-- Streamlit + Plotly (dashboard)
+- Next.js (static export) + Plotly.js (deployed dashboard), hosted on Vercel
+- Streamlit + Plotly (fallback dashboard)
 - NHL public API (`api-web.nhle.com`)
 
 ## Repository structure
@@ -97,6 +136,7 @@ data/
         fetch_team_stats.py        # NHL standings -> team GA/game
         apply_features.py          # is_elimination_game + ML features
         update_all.py              # pipeline orchestrator
+        export_web.py              # -> web/public/data.json (build-time bundle)
     mcdavid_nhl_log.csv            # API source
     mackinnon_nhl_log.csv          # API source
     international_games.csv        # manual entry
@@ -108,14 +148,14 @@ notebooks/
     02_statistical_validation.ipynb
     03_ml_model.ipynb
     04_nhl_api_pipeline.ipynb      # Phase 4 pipeline demo
-app/
-    Home.py                        # Streamlit entry point (headline)
-    pages/
-        1_Three_Acts.py
-        2_Peer_Comparison.py
-        3_Feature_Contributions.py
-        4_Limitations.py
-        5_Pipeline_Status.py
+web/                               # deployed dashboard (Next.js static export)
+    app/                           # one directory per page + layout
+    components/                    # Plot wrapper, tabs, UI primitives
+    lib/                           # typed data access, chart builders, prose
+    public/data.json               # build-time bundle (committed)
+app/                               # Streamlit fallback dashboard
+    Home.py                        # entry point (headline)
+    pages/                         # Three Acts, Peer Comparison, ...
     components/                    # data loaders, charts, model, narrative
 .streamlit/config.toml             # theme + server config
 scripts/

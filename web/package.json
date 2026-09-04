@@ -1,0 +1,24 @@
+{
+  "name": "variance97-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "data": "python3 ../data/build/export_web.py",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^16.3.4",
+    "plotly.js-basic-dist-min": "^3.0.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}
