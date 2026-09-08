@@ -1,20 +1,24 @@
-import Plot from "@/components/Plot";
-import { Callout, Divider, Metric, MetricRow } from "@/components/ui";
-import { peerBars, peerLayout, fmtSigned } from "@/lib/charts";
+import Link from "next/link";
+import PeerFigure from "./PeerFigure";
+import { Callout, DataTable, Figure, PageHeader, Rule, Stat, StatRow } from "@/components/ui";
+import { fmt, fmtSigned } from "@/lib/charts";
 import {
   NHL_CONTEXT_ORDER,
+  chartContextLabel,
   contextLabel,
   contextMean,
+  countByContext,
   mackinnon,
   mcdavid,
   meanByContext,
 } from "@/lib/data";
-import { CONFOUND_CALLOUT, HEADLINE, PEER_FOOTER } from "@/lib/narrative";
 
 export default function HomePage() {
-  const labels = NHL_CONTEXT_ORDER.map(contextLabel);
+  const labels = NHL_CONTEXT_ORDER.map(chartContextLabel);
   const mcd = meanByContext(mcdavid, NHL_CONTEXT_ORDER);
   const mac = meanByContext(mackinnon, NHL_CONTEXT_ORDER);
+  const nMcd = countByContext(mcdavid, NHL_CONTEXT_ORDER);
+  const nMac = countByContext(mackinnon, NHL_CONTEXT_ORDER);
 
   const mcdDrop =
     contextMean(mcdavid, "stanley_cup_finals") -
@@ -25,72 +29,153 @@ export default function HomePage() {
 
   return (
     <>
-      <h1 className="page-title">Variance97</h1>
-      <p className="caption">
-        A data-science investigation of Connor McDavid&rsquo;s performance in
-        high-stakes hockey: the NHL Stanley Cup Playoffs, the 2025 Four Nations
-        Face-Off, and the 2026 Winter Olympics.
-      </p>
-
-      {HEADLINE}
-
-      <h2>McDavid vs MacKinnon — points per game by NHL context</h2>
-      <Plot
-        data={peerBars(labels, mcd, mac)}
-        layout={peerLayout("Points per game")}
-        height={380}
-        ariaLabel="Grouped bar chart comparing McDavid and MacKinnon points per game across NHL contexts"
+      <PageHeader
+        kicker="The claim"
+        title={
+          <>
+            He can&rsquo;t win
+            <br />
+            the big one.
+          </>
+        }
+        dek={
+          <>
+            That&rsquo;s the story about Connor McDavid. The data supports
+            something narrower — and considerably more interesting.
+          </>
+        }
       />
 
-      <MetricRow>
-        <Metric
-          label="McDavid: regular season → SCF"
-          value={`${fmtSigned(mcdDrop)} pts/game`}
-          delta="Drop in points/game between regular season and Stanley Cup Finals."
+      <p className="lede">
+        McDavid won the 2025 Four Nations Face-Off, scoring the overtime winner
+        himself. He set the Olympic scoring record at the 2026 Milan Cortina
+        Games with 13 points in six games. And his individual production in the
+        Stanley Cup Finals falls by about {Math.abs(mcdDrop).toFixed(2)} points
+        per game against his regular-season rate.
+      </p>
+
+      <p>
+        That last number is the one the narrative rests on. It only means
+        something next to a comparison — so here is one.{" "}
+        <strong>
+          Nathan MacKinnon&rsquo;s drop is roughly twice as large, and he won
+          the Cup in 2022.
+        </strong>
+      </p>
+
+      <Figure
+        title="McDavid&rsquo;s Finals decline is smaller than his closest peer&rsquo;s"
+        subtitle="Points per game by NHL context, 2021–22 through 2025–26."
+        legend={[
+          { label: "McDavid", color: "var(--c-mcdavid)" },
+          { label: "MacKinnon", color: "var(--c-mackinnon)" },
+        ]}
+        number={1}
+        caption={
+          <>
+            Both players decline as the rounds get harder. MacKinnon declines
+            more. Sample sizes are small and listed in the table below — the
+            Stanley Cup Finals columns are n={nMcd[4]} and n={nMac[4]}.
+          </>
+        }
+      >
+        <PeerFigure labels={labels} mcd={mcd} mac={mac} />
+      </Figure>
+
+      <StatRow>
+        <Stat
+          label="McDavid, RS → Finals"
+          value={fmtSigned(mcdDrop)}
+          unit="pts/game"
+          accent
+          note="Regular season to Stanley Cup Finals."
         />
-        <Metric
-          label="MacKinnon: regular season → SCF"
-          value={`${fmtSigned(macDrop)} pts/game`}
-          delta="MacKinnon's drop, for comparison. He won the 2022 Cup."
+        <Stat
+          label="MacKinnon, RS → Finals"
+          value={fmtSigned(macDrop)}
+          unit="pts/game"
+          note="The peer who won the Cup in 2022."
         />
-        <Metric
+        <Stat
           label="Ratio"
           value={`${Math.abs(macDrop / mcdDrop).toFixed(1)}×`}
-          delta="MacKinnon's drop is this many times larger than McDavid's."
+          note="MacKinnon's decline, relative to McDavid's."
         />
-      </MetricRow>
+      </StatRow>
 
-      {PEER_FOOTER}
+      <p>
+        So the working thesis isn&rsquo;t{" "}
+        <em>&ldquo;McDavid underperforms in championship games.&rdquo;</em>{" "}
+        It&rsquo;s narrower: his teams keep losing deep playoff runs even when
+        his individual production isn&rsquo;t unusually low for an elite
+        forward. Where the signal actually lives — late-series fatigue and
+        opponent defensive quality — is what the rest of this investigation
+        tests.
+      </p>
 
-      <Divider />
+      <DataTable
+        caption="The values plotted in Fig. 1, with sample sizes."
+        columns={[
+          { key: "context", header: "Context" },
+          { key: "mcd", header: "McDavid", numeric: true },
+          { key: "nMcd", header: "n (McD)", numeric: true },
+          { key: "mac", header: "MacKinnon", numeric: true },
+          { key: "nMac", header: "n (Mac)", numeric: true },
+        ]}
+        rows={NHL_CONTEXT_ORDER.map((ctx, i) => ({
+          context: contextLabel(ctx),
+          mcd: fmt(mcd[i]),
+          nMcd: nMcd[i],
+          mac: fmt(mac[i]),
+          nMac: nMac[i],
+        }))}
+      />
 
-      <h2>Drill in</h2>
+      <Callout kind="caveat" label="Two confounds bound everything here">
+        <ol>
+          <li>
+            <strong>Florida and the Finals are perfectly entangled.</strong>{" "}
+            Edmonton&rsquo;s only two Stanley Cup Finals appearances in this
+            dataset are both against the Panthers. &ldquo;Finals effect&rdquo;
+            and &ldquo;vs Florida effect&rdquo; cannot be separated.
+          </li>
+          <li>
+            <strong>The Hellebuyck sample is n=3</strong>, all inside one
+            tournament window.
+          </li>
+        </ol>
+        <p>
+          Neither is a bug to fix. Both are facts about the data, and the{" "}
+          <Link href="/limitations">Limitations</Link> page has the full list.
+        </p>
+      </Callout>
+
+      <Rule />
+
+      <h2>Where this goes next</h2>
       <div className="card-row">
-        <div className="card">
-          <strong>Three Acts</strong>
+        <Link href="/three-acts" className="card-link">
+          <p className="card-title">Three Acts</p>
           <p>
-            Stanley Cup Playoffs, Four Nations, Olympics — game-by-game with the
-            regular-season baseline overlaid.
+            The Stanley Cup Playoffs, the Four Nations Face-Off, and the
+            Olympics — game by game, against his regular-season baseline.
           </p>
-        </div>
-        <div className="card">
-          <strong>Peer Comparison</strong>
+        </Link>
+        <Link href="/peer-comparison" className="card-link">
+          <p className="card-title">The peer test</p>
           <p>
-            Pick your own contexts and metrics. The headline finding lives here,
-            with an explicit sample-size caveat.
+            The strongest finding, with the contexts and the metric under your
+            control.
           </p>
-        </div>
-        <div className="card">
-          <strong>Feature Contributions</strong>
+        </Link>
+        <Link href="/feature-contributions" className="card-link">
+          <p className="card-title">The model</p>
           <p>
-            Per-game decomposition of the Phase 3 Ridge model. Shows what
-            carries signed weight in McDavid&rsquo;s points — <em>not</em> a
-            tonight&rsquo;s-game predictor.
+            What carries signed weight once real gameplay features compete —
+            and what dissolves. Not a tonight&rsquo;s-game predictor.
           </p>
-        </div>
+        </Link>
       </div>
-
-      <Callout kind="info">{CONFOUND_CALLOUT}</Callout>
     </>
   );
 }

@@ -1,13 +1,102 @@
 /**
- * Shared chart palette and figure builders.
- * Ported from app/components/charts.py so the two apps render identically.
+ * Chart theme + figure builders.
+ *
+ * Plotly can't read CSS custom properties, so `readChartTheme()` resolves the
+ * palette off :root at render time and every builder takes the resolved theme.
+ * Plot.tsx re-runs this when the color scheme changes, which is what makes dark
+ * mode work.
+ *
+ * Palette provenance — validated with the data-viz validator against both
+ * surfaces (light #fdfcfa, dark #17171a):
+ *   McDavid vs MacKinnon   worst CVD ΔE 20.3 light / 14.0 dark   (>= 8 target)
+ *   positive vs negative   worst CVD ΔE 21.6 light / 19.2 dark
+ * Win/loss is deliberately NOT green-vs-red: that pair measures ΔE 4.1 under
+ * deuteranopia, i.e. indistinguishable. Wins carry the series hue, losses go
+ * neutral, and every bar is direct-labelled W/L so hue is never load-bearing.
  */
-export const COLOR_MCDAVID = "#FC4C02"; // Oilers orange (and project accent)
-export const COLOR_MACKINNON = "#6F263D"; // Avalanche burgundy
-export const COLOR_BASELINE = "#7F7F7F";
-export const COLOR_WIN = "#2EA84F";
-export const COLOR_LOSS = "#C8102E";
-export const COLOR_NEGATIVE = "#1F77B4";
+
+export type ChartTheme = {
+  mcdavid: string;
+  mackinnon: string;
+  positive: string;
+  negative: string;
+  neutralMark: string;
+  grid: string;
+  axis: string;
+  ink: string;
+  inkMuted: string;
+  surface: string;
+};
+
+const FALLBACK: ChartTheme = {
+  mcdavid: "#fc4c02",
+  mackinnon: "#8e3050",
+  positive: "#2a78d6",
+  negative: "#e34948",
+  neutralMark: "#a9a69c",
+  grid: "#e3e1d9",
+  axis: "#c9c6bb",
+  ink: "#14130f",
+  inkMuted: "#77756e",
+  surface: "#fdfcfa",
+};
+
+const VAR_NAMES: Record<keyof ChartTheme, string> = {
+  mcdavid: "--c-mcdavid",
+  mackinnon: "--c-mackinnon",
+  positive: "--c-positive",
+  negative: "--c-negative",
+  neutralMark: "--c-neutral-mark",
+  grid: "--c-grid",
+  axis: "--c-axis",
+  ink: "--c-ink",
+  inkMuted: "--c-ink-muted",
+  surface: "--c-surface",
+};
+
+export function readChartTheme(): ChartTheme {
+  if (typeof window === "undefined") return FALLBACK;
+  const styles = getComputedStyle(document.documentElement);
+  const out = {} as ChartTheme;
+  for (const key of Object.keys(VAR_NAMES) as (keyof ChartTheme)[]) {
+    out[key] = styles.getPropertyValue(VAR_NAMES[key]).trim() || FALLBACK[key];
+  }
+  return out;
+}
+
+const FONT_STACK =
+  'var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif';
+
+/** Chrome shared by every figure: recessive hairline grid, no Plotly legend. */
+export function baseLayout(t: ChartTheme) {
+  return {
+    font: { family: FONT_STACK, size: 12.5, color: t.inkMuted },
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    showlegend: false,
+    hoverlabel: {
+      bgcolor: t.surface,
+      bordercolor: t.axis,
+      font: { family: FONT_STACK, size: 12.5, color: t.ink },
+    },
+    xaxis: {
+      gridcolor: t.grid,
+      linecolor: t.axis,
+      zerolinecolor: t.axis,
+      tickfont: { size: 12, color: t.inkMuted },
+      // Deliberately no automargin: it grows the SVG past layout.height, which
+      // pushes the axis band outside the figure's bordered box.
+      automargin: false,
+    },
+    yaxis: {
+      gridcolor: t.grid,
+      linecolor: t.axis,
+      zerolinecolor: t.axis,
+      tickfont: { size: 12, color: t.inkMuted },
+      automargin: true,
+    },
+  };
+}
 
 export const fmt = (v: number | null, digits = 2) =>
   v === null || Number.isNaN(v) ? "—" : v.toFixed(digits);
@@ -15,108 +104,75 @@ export const fmt = (v: number | null, digits = 2) =>
 export const fmtSigned = (v: number | null, digits = 2) =>
   v === null || Number.isNaN(v)
     ? "—"
-    : `${v >= 0 ? "+" : ""}${v.toFixed(digits)}`;
+    : `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(digits)}`;
 
-/** Grouped bar: McDavid vs MacKinnon across contexts. */
+/* ------------------------------------------------------------------ */
+/* Peer comparison — two categorical series                            */
+/* ------------------------------------------------------------------ */
+
 export function peerBars(
+  t: ChartTheme,
   labels: string[],
   mcd: (number | null)[],
   mac: (number | null)[],
+  metricLabel: string,
 ) {
+  const series = (
+    name: string,
+    values: (number | null)[],
+    color: string,
+  ) => ({
+    type: "bar",
+    name,
+    x: labels,
+    y: values,
+    marker: { color, line: { width: 0 } },
+    hovertemplate: `<b>%{x}</b><br>${name}: %{y:.2f} ${metricLabel}<extra></extra>`,
+  });
+
   return [
-    {
-      type: "bar",
-      x: labels,
-      y: mcd,
-      name: "McDavid",
-      marker: { color: COLOR_MCDAVID },
-      text: mcd.map((v) => (v === null ? "" : v.toFixed(2))),
-      textposition: "outside",
-    },
-    {
-      type: "bar",
-      x: labels,
-      y: mac,
-      name: "MacKinnon",
-      marker: { color: COLOR_MACKINNON },
-      text: mac.map((v) => (v === null ? "" : v.toFixed(2))),
-      textposition: "outside",
-    },
+    series("McDavid", mcd, t.mcdavid),
+    series("MacKinnon", mac, t.mackinnon),
   ];
 }
 
-export function peerLayout(yTitle: string) {
+export function peerLayout(t: ChartTheme, yTitle: string) {
+  const base = baseLayout(t);
   return {
+    ...base,
     barmode: "group",
-    yaxis: { title: { text: yTitle } },
-    xaxis: { title: { text: "" } },
-    legend: { orientation: "h", yanchor: "bottom", y: 1.02, x: 0 },
-    margin: { t: 40, b: 40, l: 50, r: 20 },
+    bargap: 0.5,
+    bargroupgap: 0.12,
+    yaxis: {
+      ...base.yaxis,
+      title: { text: yTitle, font: { size: 12, color: t.inkMuted } },
+      rangemode: "tozero",
+    },
+    xaxis: { ...base.xaxis, showgrid: false },
+    margin: { t: 10, b: 58, l: 58, r: 14 },
   };
 }
 
-/** Horizontal signed-value bar chart (coefficients, contributions). */
-export function signedBars(
-  items: { label: string; value: number }[],
-  digits = 3,
-) {
-  return [
-    {
-      type: "bar",
-      orientation: "h",
-      x: items.map((i) => i.value),
-      y: items.map((i) => i.label),
-      marker: {
-        color: items.map((i) =>
-          i.value >= 0 ? COLOR_MCDAVID : COLOR_NEGATIVE,
-        ),
-      },
-      text: items.map(
-        (i) => `${i.value >= 0 ? "+" : ""}${i.value.toFixed(digits)}`,
-      ),
-      textposition: "outside",
-      // Outside labels on the leftmost negative bar get cut off at the axis
-      // without this.
-      cliponaxis: false,
-      hovertemplate: "%{y}<br>%{x:.3f}<extra></extra>",
-    },
-  ];
-}
+/* ------------------------------------------------------------------ */
+/* Game-by-game — one measure, outcome as a secondary channel          */
+/* ------------------------------------------------------------------ */
 
-/**
- * `values` is used to pad the x-range: outside-positioned labels on the
- * outermost bars are drawn past the bar end, and without headroom they
- * collide with the y-axis tick labels.
- */
-export function signedLayout(xTitle: string, values: number[]) {
-  const min = Math.min(0, ...values);
-  const max = Math.max(0, ...values);
-  const pad = (max - min) * 0.18 || 1;
-  return {
-    xaxis: {
-      title: { text: xTitle },
-      zeroline: true,
-      zerolinecolor: "#888",
-      range: [min - pad, max + pad],
-    },
-    yaxis: { title: { text: "" }, automargin: true },
-    margin: { t: 20, b: 40, l: 20, r: 30 },
-    showlegend: false,
-  };
-}
+export type ResultGame = {
+  date: string;
+  opponent: string;
+  points: number;
+  result: string;
+};
 
-/** Per-game points bars colored by W/L. Mirrors charts.py::points_by_game. */
-export function pointsByGameBars(
-  games: { date: string; opponent: string; points: number; result: string }[],
-) {
+export function gameBars(t: ChartTheme, games: ResultGame[]) {
   const labels = games.map((g) => {
-    const d = new Date(`${g.date}T00:00:00`);
+    const d = new Date(`${g.date}T00:00:00Z`);
     const md = d.toLocaleDateString("en-US", {
       month: "short",
-      day: "2-digit",
+      day: "numeric",
       timeZone: "UTC",
     });
-    return `${md}<br>${g.opponent}`;
+    return `${g.opponent}<br>${md} · ${g.result}`;
   });
   return [
     {
@@ -124,30 +180,40 @@ export function pointsByGameBars(
       x: labels,
       y: games.map((g) => g.points),
       marker: {
-        color: games.map((g) => (g.result === "W" ? COLOR_WIN : COLOR_LOSS)),
+        color: games.map((g) =>
+          g.result === "W" ? t.mcdavid : t.neutralMark,
+        ),
+        line: { width: 0 },
       },
-      text: games.map((g) => String(g.points)),
-      textposition: "outside",
-      hovertemplate: "%{x}<br>Points: %{y}<extra></extra>",
+      customdata: games.map((g) => (g.result === "W" ? "Win" : "Loss")),
+      hovertemplate:
+        "<b>%{x}</b><br>%{y} points · %{customdata}<extra></extra>",
     },
   ];
 }
 
-export function pointsByGameLayout(title: string) {
+export function gameLayout(t: ChartTheme) {
+  const base = baseLayout(t);
   return {
-    title: { text: title },
-    yaxis: { title: { text: "Points" } },
-    xaxis: { title: { text: "" } },
-    margin: { t: 50, b: 70, l: 50, r: 20 },
-    showlegend: false,
+    ...base,
+    bargap: 0.6,
+    yaxis: {
+      ...base.yaxis,
+      title: { text: "Points", font: { size: 12, color: t.inkMuted } },
+      rangemode: "tozero",
+      dtick: 1,
+    },
+    xaxis: { ...base.xaxis, showgrid: false },
+    margin: { t: 10, b: 62, l: 52, r: 14 },
   };
 }
 
-/**
- * Average points by playoff game number, with the regular-season baseline as a
- * dashed line and games 6–7 shaded. Mirrors charts.py::points_by_game_number.
- */
+/* ------------------------------------------------------------------ */
+/* Playoff game number — single line, baseline reference               */
+/* ------------------------------------------------------------------ */
+
 export function gameNumberTrace(
+  t: ChartTheme,
   points: { gameNumber: number; avg: number }[],
 ) {
   return [
@@ -156,26 +222,35 @@ export function gameNumberTrace(
       mode: "lines+markers",
       x: points.map((p) => p.gameNumber),
       y: points.map((p) => p.avg),
-      line: { color: COLOR_MCDAVID, width: 3 },
-      marker: { size: 10 },
-      name: "Avg points",
-      hovertemplate: "Game %{x}<br>Avg: %{y:.2f}<extra></extra>",
+      line: { color: t.mcdavid, width: 2, shape: "linear" },
+      marker: { size: 8, color: t.mcdavid, line: { width: 2, color: t.surface } },
+      hovertemplate: "Game %{x}<br>%{y:.2f} points (avg)<extra></extra>",
     },
   ];
 }
 
-export function gameNumberLayout(regularSeasonAvg: number, maxGame: number) {
+export function gameNumberLayout(
+  t: ChartTheme,
+  regularSeasonAvg: number,
+  maxGame: number,
+) {
+  const base = baseLayout(t);
   return {
+    ...base,
     xaxis: {
+      ...base.xaxis,
+      title: { text: "Game number in series", font: { size: 12, color: t.inkMuted } },
       tickmode: "linear",
       tick0: 1,
       dtick: 1,
-      title: { text: "Playoff game number" },
-      range: [0.5, maxGame + 0.5],
+      range: [0.6, maxGame + 0.4],
+      showgrid: false,
     },
-    yaxis: { title: { text: "McDavid points (avg)" } },
-    margin: { t: 20, b: 50, l: 50, r: 20 },
-    showlegend: false,
+    yaxis: {
+      ...base.yaxis,
+      title: { text: "Points per game", font: { size: 12, color: t.inkMuted } },
+    },
+    margin: { t: 26, b: 52, l: 58, r: 14 },
     shapes: [
       {
         type: "line",
@@ -184,43 +259,68 @@ export function gameNumberLayout(regularSeasonAvg: number, maxGame: number) {
         x1: 1,
         y0: regularSeasonAvg,
         y1: regularSeasonAvg,
-        line: { color: COLOR_BASELINE, dash: "dash", width: 2 },
-      },
-      {
-        type: "rect",
-        xref: "x",
-        yref: "paper",
-        x0: 5.5,
-        x1: 7.5,
-        y0: 0,
-        y1: 1,
-        fillcolor: "red",
-        opacity: 0.05,
-        line: { width: 0 },
+        line: { color: t.axis, width: 1 },
+        layer: "below",
       },
     ],
     annotations: [
       {
         xref: "paper",
-        x: 1,
-        y: regularSeasonAvg,
-        xanchor: "right",
-        yanchor: "bottom",
-        text: `Regular season avg (${regularSeasonAvg.toFixed(2)})`,
-        showarrow: false,
-        font: { color: COLOR_BASELINE, size: 12 },
-      },
-      {
-        xref: "x",
-        x: 5.6,
-        yref: "paper",
-        y: 1,
+        x: 0,
         xanchor: "left",
-        yanchor: "top",
-        text: "Late series",
+        y: regularSeasonAvg,
+        yanchor: "bottom",
+        text: `Regular season · ${regularSeasonAvg.toFixed(2)}`,
         showarrow: false,
-        font: { size: 12, color: COLOR_BASELINE },
+        font: { size: 11.5, color: t.inkMuted },
+        yshift: 3,
       },
     ],
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Signed bars — diverging polarity (coefficients, contributions)      */
+/* ------------------------------------------------------------------ */
+
+export type SignedItem = { label: string; value: number };
+
+export function signedBars(t: ChartTheme, items: SignedItem[], unit: string) {
+  return [
+    {
+      type: "bar",
+      orientation: "h",
+      x: items.map((i) => i.value),
+      y: items.map((i) => i.label),
+      marker: {
+        color: items.map((i) => (i.value >= 0 ? t.positive : t.negative)),
+        line: { width: 0 },
+      },
+      hovertemplate: `%{y}<br>%{x:+.3f} ${unit}<extra></extra>`,
+    },
+  ];
+}
+
+export function signedLayout(
+  t: ChartTheme,
+  xTitle: string,
+  values: number[],
+) {
+  const base = baseLayout(t);
+  const min = Math.min(0, ...values);
+  const max = Math.max(0, ...values);
+  const pad = (max - min) * 0.12 || 1;
+  return {
+    ...base,
+    bargap: 0.45,
+    xaxis: {
+      ...base.xaxis,
+      title: { text: xTitle, font: { size: 12, color: t.inkMuted } },
+      range: [min - pad, max + pad],
+      zeroline: true,
+      zerolinewidth: 1,
+    },
+    yaxis: { ...base.yaxis, showgrid: false, tickfont: { size: 12, color: t.ink } },
+    margin: { t: 10, b: 52, l: 10, r: 22 },
   };
 }

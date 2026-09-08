@@ -77,6 +77,24 @@ export const PLAYOFF_CONTEXTS = [
   "stanley_cup_finals",
 ];
 
+/**
+ * Category label for a chart axis, broken over two lines.
+ *
+ * Plotly rotates tick labels when they don't fit, and rotated labels then get
+ * clipped because the figure box can't grow to absorb them (Plotly positions
+ * its SVG absolutely). Wrapping keeps them horizontal at every width.
+ */
+export function chartContextLabel(ctx: string): string {
+  const wrapped: Record<string, string> = {
+    regular_season: "Regular<br>season",
+    first_round: "First<br>round",
+    second_round: "Second<br>round",
+    conf_finals: "Conference<br>finals",
+    stanley_cup_finals: "Stanley Cup<br>finals",
+  };
+  return wrapped[ctx] ?? contextLabel(ctx);
+}
+
 /** Pretty-print a game_context value. Mirrors data_loader.context_label. */
 export function contextLabel(ctx: string): string {
   return ctx

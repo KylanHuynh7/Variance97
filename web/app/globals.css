@@ -1,246 +1,710 @@
-/* Theme carried over from .streamlit/config.toml so the port looks familiar. */
+/* ============================================================================
+   Variance97 — editorial data-journalism system.
+
+   Two type families: a serif for display (headlines, deks, pull quotes) and a
+   sans for everything that has to be read as data — body copy, UI, tables,
+   stat figures, chart labels. Big numbers deliberately stay in the sans; a
+   serif hero figure reads as decoration rather than a measurement.
+
+   Chart colors live here as custom properties so the light/dark steps are
+   declared in one place. Plotly can't read CSS variables, so Plot.tsx resolves
+   these off the document at render time — which means every chart color must
+   be defined on :root, not on a nested selector.
+   ============================================================================ */
+
 :root {
-  --primary: #ff4f00;
+  /* --- surfaces & ink: Edmonton Oilers navy on a cool white sheet --- */
+  --paper: #f2f5f8;
+  --surface: #ffffff;
+  --surface-sunk: #e7ecf3;
+  --ink: #041e42;          /* Oilers navy — the structural color */
+  --ink-secondary: #3d5a80;
+  --ink-muted: #566579;
+  --rule: #d9e1ea;
+  --rule-strong: #b9c6d6;
+
+  /* --- brand accent: Oilers orange --- */
   --accent: #fc4c02;
-  --bg: #ffffff;
-  --bg-secondary: #f4f4f4;
-  --text: #1a1a1a;
-  --muted: #5c5c5c;
-  --border: #e2e2e2;
-  --sidebar-w: 260px;
+  --accent-ink: #b33702;   /* orange stepped for text on the light sheet */
+
+  /* --- chart palette (validated against #ffffff; see lib/charts.ts) --- */
+  --c-mcdavid: #fc4c02;
+  --c-mackinnon: #8e3050;
+  --c-positive: #2a78d6;
+  --c-negative: #e34948;
+  --c-neutral-mark: #7c8ca0;
+  --c-grid: #e4eaf1;
+  --c-axis: #b9c6d6;
+  --c-ink: #041e42;
+  --c-ink-muted: #566579;
+  --c-surface: #ffffff;
+
+  /* --- callout tints --- */
+  --tint-note: #eaf1fa;
+  --tint-note-edge: #2a78d6;
+  --tint-key: #e9f4ec;
+  --tint-key-edge: #0ca30c;
+  --tint-warn: #fdf3e3;
+  --tint-warn-edge: #d99100;
+  --tint-caveat: #fceded;
+  --tint-caveat-edge: #d03b3b;
+
+  /* --- measure & rhythm --- */
+  --measure: 34rem;
+  --wide: 60rem;
+
   color-scheme: light;
+}
+
+/* Dark values are declared under both scopes: the media query follows the OS
+   setting, and the [data-theme] scope lets an explicit choice win either way
+   if a toggle is ever added. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --paper: #041e42;        /* Oilers home sweater */
+  --surface: #0a2647;
+  --surface-sunk: #0e2e55;
+  --ink: #e8eef6;
+  --ink-secondary: #9db4ce;
+  --ink-muted: #7e96b3;
+  --rule: #12395f;
+  --rule-strong: #1d4a75;
+
+  --accent: #ff6a2b;
+  --accent-ink: #ff8a52;
+
+  --c-mcdavid: #fc4c02;
+  --c-mackinnon: #c2537a;
+  --c-positive: #3987e5;
+  --c-negative: #e66767;
+  --c-neutral-mark: #7b94b0;
+  --c-grid: #12395f;
+  --c-axis: #1d4a75;
+  --c-ink: #e8eef6;
+  --c-ink-muted: #7e96b3;
+  --c-surface: #0a2647;
+
+  --tint-note: #0b2c4d;
+  --tint-key: #0c2c33;
+  --tint-warn: #2b2412;
+  --tint-caveat: #331a1c;
+
+  color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #041e42;        /* Oilers home sweater */
+  --surface: #0a2647;
+  --surface-sunk: #0e2e55;
+  --ink: #e8eef6;
+  --ink-secondary: #9db4ce;
+  --ink-muted: #7e96b3;
+  --rule: #12395f;
+  --rule-strong: #1d4a75;
+
+  --accent: #ff6a2b;
+  --accent-ink: #ff8a52;
+
+  --c-mcdavid: #fc4c02;
+  --c-mackinnon: #c2537a;
+  --c-positive: #3987e5;
+  --c-negative: #e66767;
+  --c-neutral-mark: #7b94b0;
+  --c-grid: #12395f;
+  --c-axis: #1d4a75;
+  --c-ink: #e8eef6;
+  --c-ink-muted: #7e96b3;
+  --c-surface: #0a2647;
+
+  --tint-note: #0b2c4d;
+  --tint-key: #0c2c33;
+  --tint-warn: #2b2412;
+  --tint-caveat: #331a1c;
+
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 
-html, body {
+html {
+  background: var(--paper);
+  /* The nav is sticky; keep anchor jumps clear of it. */
+  scroll-padding-top: 5rem;
+}
+
+body {
   margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-a { color: var(--accent); }
+::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
-code {
-  background: var(--bg-secondary);
-  border-radius: 4px;
-  padding: 0.1em 0.35em;
-  font-size: 0.9em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
+/* ============================ nav ============================ */
 
-/* ---------- shell ---------- */
-/* The left band is painted on the shell rather than the sidebar so it runs the
-   full document height while the sidebar itself stays sticky at 100vh. */
-.shell {
-  display: flex;
-  min-height: 100vh;
-  background: linear-gradient(
-    to right,
-    var(--bg-secondary) 0 calc(var(--sidebar-w) - 1px),
-    var(--border) calc(var(--sidebar-w) - 1px) var(--sidebar-w),
-    var(--bg) var(--sidebar-w)
-  );
-}
-
-.sidebar {
-  width: var(--sidebar-w);
-  flex: 0 0 var(--sidebar-w);
-  padding: 1.5rem 1.25rem 2rem;
+.masthead {
   position: sticky;
   top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  z-index: 50;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: saturate(1.6) blur(10px);
+  border-bottom: 1px solid var(--rule);
 }
 
-.sidebar h1 {
-  font-size: 1.25rem;
-  margin: 0 0 0.25rem;
-  letter-spacing: -0.02em;
+.masthead-inner {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 3.75rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-.sidebar .tagline { color: var(--muted); font-size: 0.8rem; margin: 0 0 1.5rem; }
-
-.sidebar nav { display: flex; flex-direction: column; gap: 0.15rem; }
-
-.sidebar nav a {
-  display: block;
-  padding: 0.45rem 0.65rem;
-  border-radius: 6px;
-  color: var(--text);
+.wordmark {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ink);
   text-decoration: none;
-  font-size: 0.92rem;
-  border-left: 3px solid transparent;
+  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 0.05em;
 }
-.sidebar nav a:hover { background: rgba(0, 0, 0, 0.05); }
-.sidebar nav a[aria-current="page"] {
-  background: #fff;
-  border-left-color: var(--primary);
+.wordmark em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.masthead nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.masthead nav::-webkit-scrollbar { display: none; }
+
+.masthead nav a {
+  position: relative;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 5px;
+}
+.masthead nav a:hover { color: var(--ink); background: var(--surface-sunk); }
+.masthead nav a[aria-current="page"] { color: var(--ink); font-weight: 650; }
+.masthead nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0.6rem;
+  right: 0.6rem;
+  bottom: -0.5rem;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* ============================ page shell ============================ */
+
+.page {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 3.5rem 2rem 7rem;
+}
+
+/* Prose sits at a reading measure; figures, tables and stat rows break out to
+   the full column. Applied to the text elements themselves so it still holds
+   for content nested inside tab panels. */
+.page :is(p, h1, h2, h3, ul, ol, blockquote, pre.prose) {
+  max-width: var(--measure);
+}
+.page :is(figure, .stat-row, .table-wrap, .controls, .card-row, .tabs) {
+  max-width: none;
+}
+
+/* ============================ headers ============================ */
+
+.kicker {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin: 0 0 1rem;
+}
+
+h1.display {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin: 0 0 1.25rem;
+  text-wrap: balance;
+}
+
+.dek {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  line-height: 1.45;
+  color: var(--ink-secondary);
+  margin: 0 0 2.5rem;
+  text-wrap: pretty;
+}
+
+h2 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 600;
+  font-size: 1.85rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  margin: 3.5rem 0 0.75rem;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 650;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  margin: 2.5rem 0 0.5rem;
+}
+
+p { margin: 0 0 1.15rem; text-wrap: pretty; }
+
+.lede::first-letter {
+  float: left;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding: 0.08em 0.08em 0 0;
+  color: var(--accent);
   font-weight: 600;
 }
 
-.sidebar section { margin-top: 2rem; font-size: 0.82rem; color: var(--muted); }
-.sidebar section h2 {
-  font-size: 0.78rem;
+a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+strong { font-weight: 650; }
+
+code {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.86em;
+  background: var(--surface-sunk);
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+}
+
+ul, ol { margin: 0 0 1.15rem; padding-left: 1.2rem; }
+li { margin-bottom: 0.5rem; }
+
+hr.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 3.5rem 0;
+  max-width: none;
+}
+
+/* ============================ figures ============================ */
+
+figure {
+  margin: 2.25rem 0 2.5rem;
+  padding: 0;
+}
+
+figure .figure-head { margin-bottom: 1rem; max-width: var(--measure); }
+
+figure .figure-title {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 650;
+  font-size: 1rem;
+  line-height: 1.35;
+  margin: 0 0 0.2rem;
+  color: var(--ink);
+}
+
+figure .figure-sub {
+  font-size: 0.86rem;
+  color: var(--ink-secondary);
+  margin: 0;
+}
+
+figure .plot {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.75rem 0.5rem 0.5rem;
+  /* Height comes from Plotly's own SVG; the inline min-height only reserves
+     space before it loads. Nothing is clipped here — the chart's own margins
+     are sized to include the axis band. */
+  height: auto !important;
+}
+
+figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  max-width: var(--measure);
+}
+figcaption .fig-no {
+  font-weight: 650;
+  color: var(--ink-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted);
-  margin: 0 0 0.4rem;
+  font-size: 0.74rem;
 }
 
-.content { flex: 1 1 auto; min-width: 0; padding: 2.5rem 3rem 5rem; }
-.content > *:first-child { margin-top: 0; }
-
-h1.page-title { font-size: 2.4rem; letter-spacing: -0.03em; margin: 0 0 0.5rem; }
-h2 { font-size: 1.5rem; letter-spacing: -0.02em; margin: 2.25rem 0 0.5rem; }
-h3 { font-size: 1.1rem; margin: 1.75rem 0 0.4rem; }
-p { margin: 0.75rem 0; max-width: 76ch; }
-ul, ol { max-width: 76ch; }
-
-.caption { color: var(--muted); font-size: 0.88rem; max-width: 76ch; }
-
-hr.divider { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
-
-/* ---------- metrics ---------- */
-.metric-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
-.metric {
-  flex: 1 1 0;
-  min-width: 150px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
+/* Legend rendered in HTML, not by Plotly — keeps it in text tokens. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0 0 0.5rem;
+  padding: 0 0.25rem;
+  font-size: 0.82rem;
+  color: var(--ink-secondary);
+  list-style: none;
 }
-.metric .label {
-  font-size: 0.78rem;
-  color: var(--muted);
-  text-transform: none;
+.legend li { display: flex; align-items: center; gap: 0.4rem; margin: 0; }
+.legend .swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+
+/* ============================ stats ============================ */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0;
+  margin: 2rem 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule);
+}
+
+.stat {
+  padding: 1.1rem 1.25rem 1.15rem 0;
+  border-right: 1px solid var(--rule);
+}
+.stat:last-child { border-right: 0; }
+
+.stat .stat-label {
   display: block;
-  margin-bottom: 0.2rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.35rem;
 }
-.metric .value { font-size: 1.65rem; font-weight: 650; letter-spacing: -0.02em; }
-.metric .delta { font-size: 0.82rem; color: var(--muted); margin-top: 0.1rem; }
 
-/* ---------- callouts ---------- */
-.callout { border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1.25rem 0; max-width: 80ch; }
+/* Sans, proportional figures — never the serif, never tabular at this size. */
+.stat .stat-value {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 2rem;
+  font-weight: 620;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.stat .stat-value .unit {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-muted);
+  margin-left: 0.2rem;
+}
+.stat .stat-note {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+  margin-top: 0.4rem;
+}
+.stat.is-accent .stat-value { color: var(--accent-ink); }
+
+/* ============================ callouts ============================ */
+
+.callout {
+  border-left: 3px solid var(--tint-note-edge);
+  background: var(--tint-note);
+  padding: 1rem 1.25rem;
+  margin: 2rem 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.94rem;
+  max-width: var(--measure);
+}
 .callout > *:first-child { margin-top: 0; }
 .callout > *:last-child { margin-bottom: 0; }
-.callout.info { background: #eef4fb; border-left: 4px solid #2b6cb0; }
-.callout.success { background: #eef8f0; border-left: 4px solid #2ea84f; }
-.callout.warning { background: #fdf6e6; border-left: 4px solid #d99100; }
-.callout.error { background: #fdeeee; border-left: 4px solid #c8102e; }
+.callout .callout-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  margin-bottom: 0.45rem;
+  color: var(--ink-secondary);
+}
+.callout.key { background: var(--tint-key); border-left-color: var(--tint-key-edge); }
+.callout.warn { background: var(--tint-warn); border-left-color: var(--tint-warn-edge); }
+.callout.caveat { background: var(--tint-caveat); border-left-color: var(--tint-caveat-edge); }
 
-/* ---------- tables ---------- */
-.table-wrap { overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); border-radius: 8px; }
-table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+/* ============================ tables ============================ */
+
+.table-wrap { overflow-x: auto; margin: 1.5rem 0 2rem; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+caption {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.5rem;
+}
 thead th {
   text-align: left;
-  background: var(--bg-secondary);
-  padding: 0.55rem 0.8rem;
-  font-weight: 600;
+  font-weight: 650;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 0 0.9rem 0.5rem 0;
+  border-bottom: 1px solid var(--rule-strong);
   white-space: nowrap;
-  border-bottom: 1px solid var(--border);
 }
-tbody td { padding: 0.5rem 0.8rem; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
-tbody tr:last-child td { border-bottom: 0; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody code, thead code { background: none; padding: 0; }
 
-/* ---------- controls ---------- */
-.controls { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: flex-end; margin: 1.25rem 0; }
-.control { display: flex; flex-direction: column; gap: 0.3rem; }
-.control > span { font-size: 0.82rem; color: var(--muted); }
+tbody td {
+  padding: 0.55rem 0.9rem 0.55rem 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; }
+thead th:last-child, tbody td:last-child { padding-right: 0; }
+
+/* ============================ controls ============================ */
+
+.controls {
+  display: flex;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--surface-sunk);
+  border-radius: 10px;
+}
+.control { display: flex; flex-direction: column; gap: 0.45rem; }
+.control > .control-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
 select {
   font: inherit;
-  font-size: 0.9rem;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--text);
+  font-size: 0.88rem;
+  padding: 0.4rem 2rem 0.4rem 0.65rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
   max-width: 100%;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 1rem) 55%, calc(100% - 0.7rem) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
 }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .chip {
   font: inherit;
-  font-size: 0.85rem;
-  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  padding: 0.32rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--text);
+  border: 1px solid var(--rule-strong);
+  background: transparent;
+  color: var(--ink-secondary);
   cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
+.chip:hover { border-color: var(--ink-muted); color: var(--ink); }
 .chip[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
   font-weight: 600;
 }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* ---------- tabs ---------- */
-.tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin: 1.5rem 0 0; flex-wrap: wrap; }
+/* ============================ tabs ============================ */
+
+.tabs {
+  display: flex;
+  gap: 1.75rem;
+  border-bottom: 1px solid var(--rule);
+  margin: 2rem 0 0;
+  flex-wrap: wrap;
+}
 .tabs button {
   font: inherit;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   background: none;
   border: 0;
   border-bottom: 2px solid transparent;
-  padding: 0.6rem 0.9rem;
+  padding: 0 0 0.7rem;
+  margin-bottom: -1px;
   cursor: pointer;
-  color: var(--muted);
+  color: var(--ink-muted);
 }
+.tabs button:hover { color: var(--ink); }
 .tabs button[aria-selected="true"] {
-  color: var(--text);
-  font-weight: 600;
-  border-bottom-color: var(--primary);
+  color: var(--ink);
+  font-weight: 650;
+  border-bottom-color: var(--accent);
 }
-.tabpanel { padding-top: 1.25rem; }
+.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.tabpanel { padding-top: 0.5rem; }
 
-/* ---------- expanders ---------- */
+/* ============================ disclosure ============================ */
+
 details {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.65rem 0.9rem;
-  margin: 0.5rem 0;
-  max-width: 80ch;
-  background: #fff;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.9rem 0;
+  max-width: var(--measure);
 }
-details[open] { background: var(--bg-secondary); }
-summary { cursor: pointer; font-weight: 600; font-size: 0.95rem; }
-details p { margin: 0.6rem 0 0.2rem; }
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  list-style: none;
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: "+";
+  color: var(--accent);
+  font-weight: 700;
+  flex: none;
+  width: 0.8em;
+}
+details[open] summary::before { content: "\2212"; }
+details summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+details .details-body {
+  padding: 0.7rem 0 0.2rem 1.5rem;
+  font-size: 0.92rem;
+  color: var(--ink-secondary);
+}
+details .details-body p:last-child { margin-bottom: 0; }
 
-/* ---------- cards ---------- */
-.card-row { display: flex; gap: 1.25rem; flex-wrap: wrap; margin: 1rem 0; }
-.card { flex: 1 1 240px; }
-.card strong { display: block; margin-bottom: 0.2rem; }
-.card p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+/* ============================ cards ============================ */
 
-@media (max-width: 900px) {
-  .shell { flex-direction: column; }
-  .shell { background: none; }
-  .sidebar { width: 100%; flex: none; height: auto; position: static; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
-  .sidebar nav { flex-direction: row; flex-wrap: wrap; }
-  /* The About / Latest-data blocks would push the headline below the fold on a
-     phone. Pipeline Status carries the same information. */
-  .sidebar section { display: none; }
-  .content { padding: 1.75rem 1.25rem 4rem; }
-  h1.page-title { font-size: 1.9rem; }
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1.5rem;
+  margin: 1.75rem 0;
+}
+.card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding-top: 0.9rem;
+  border-top: 2px solid var(--ink);
+}
+.card-link .card-title {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 650;
+  font-size: 1rem;
+  margin: 0 0 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.card-link .card-title::after {
+  content: "\2192";
+  color: var(--accent);
+  transition: transform 0.15s;
+}
+.card-link:hover .card-title::after { transform: translateX(3px); }
+.card-link p { font-size: 0.88rem; color: var(--ink-secondary); margin: 0; }
+
+/* ============================ footer ============================ */
+
+.colophon {
+  border-top: 1px solid var(--rule);
+  margin-top: 5rem;
+  padding: 2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  max-width: none;
+  display: flex;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+.colophon div { max-width: 22rem; }
+.colophon strong {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  margin-bottom: 0.3rem;
 }
 
 pre {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: var(--surface-sunk);
   border-radius: 8px;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1.1rem;
   overflow-x: auto;
-  max-width: 80ch;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  max-width: none;
 }
-pre code { background: none; padding: 0; }
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* ============================ responsive ============================ */
+
+@media (max-width: 46rem) {
+  .masthead-inner { padding: 0 1.1rem; gap: 1rem; }
+  .page { padding: 2rem 1.1rem 4rem; }
+  h1.display { font-size: clamp(2rem, 9vw, 2.6rem); }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .stat { padding-right: 1rem; }
+  .stat:nth-child(2n) { border-right: 0; }
+  .lede::first-letter { font-size: 2.8em; }
+  .controls { gap: 1.1rem; padding: 0.9rem 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

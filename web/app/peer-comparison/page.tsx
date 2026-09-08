@@ -1,7 +1,8 @@
-import { Divider } from "@/components/ui";
+import { PageHeader, Rule } from "@/components/ui";
 import {
   NHL_CONTEXT_ORDER,
   NumericGameKey,
+  chartContextLabel,
   contextLabel,
   countByContext,
   mackinnon,
@@ -10,9 +11,14 @@ import {
 } from "@/lib/data";
 import PeerExplorer, { PeerStats } from "./PeerExplorer";
 
-export const metadata = { title: "Peer Comparison · Variance97" };
+export const metadata = { title: "The peer test" };
 
-const METRIC_KEYS: NumericGameKey[] = ["points", "goals", "assists", "plus_minus"];
+const METRIC_KEYS: NumericGameKey[] = [
+  "points",
+  "goals",
+  "assists",
+  "plus_minus",
+];
 
 export default function PeerComparisonPage() {
   const means: PeerStats["means"] = {};
@@ -26,6 +32,7 @@ export default function PeerComparisonPage() {
   const stats: PeerStats = {
     contexts: NHL_CONTEXT_ORDER,
     labels: NHL_CONTEXT_ORDER.map(contextLabel),
+    chartLabels: NHL_CONTEXT_ORDER.map(chartContextLabel),
     counts: {
       mcdavid: countByContext(mcdavid, NHL_CONTEXT_ORDER),
       mackinnon: countByContext(mackinnon, NHL_CONTEXT_ORDER),
@@ -35,37 +42,47 @@ export default function PeerComparisonPage() {
 
   return (
     <>
-      <h1 className="page-title">Peer Comparison — McDavid vs MacKinnon</h1>
-      <p>
-        MacKinnon is the cleanest peer benchmark available: same era, similar
-        usage, made the playoffs every year of the McDavid window, and won the
-        Cup in 2022. If McDavid uniquely collapsed in the Stanley Cup Finals,
-        this is the comparison that would catch it.
+      <PageHeader
+        kicker="The peer test"
+        title="Compared to whom?"
+        dek={
+          <>
+            A decline only means something against a baseline. Nathan MacKinnon
+            is the cleanest one available — and the comparison runs the opposite
+            way to the narrative.
+          </>
+        }
+      />
+
+      <p className="lede">
+        MacKinnon is the closest thing to a controlled comparison this dataset
+        allows: the same era, similar usage, a playoff appearance in every year
+        of the McDavid window, and a Stanley Cup in 2022. If McDavid uniquely
+        collapsed in the Finals, this is the comparison that would catch it.
       </p>
 
       <PeerExplorer stats={stats} />
 
-      <Divider />
+      <Rule />
 
-      <h2>What this comparison rules in and out</h2>
+      <h2>What this rules in and out</h2>
       <ul>
         <li>
-          <strong>Rules out (the cleanest version of) H1.</strong> If
-          McDavid&rsquo;s individual Finals output were unusually low for an
-          elite forward, MacKinnon&rsquo;s would be the floor. It isn&rsquo;t —
-          MacKinnon dropped further.
+          <strong>It rules out the cleanest version of H1.</strong> If
+          McDavid&rsquo;s Finals output were unusually low for an elite forward,
+          MacKinnon&rsquo;s would be the floor. It isn&rsquo;t — MacKinnon fell
+          further.
         </li>
         <li>
-          <strong>Doesn&rsquo;t address H3.</strong> Whether <em>specific</em>{" "}
-          matchups (Bobrovsky, Hellebuyck) suppress McDavid uniquely is a
-          different question. See the Feature Contributions page for a
-          model-based attempt at that.
+          <strong>It does not address H3.</strong> Whether specific matchups —
+          Bobrovsky, Hellebuyck — suppress McDavid in particular is a different
+          question, and the model page is the closest this project gets to it.
         </li>
         <li>
-          <strong>Sample-size caveat.</strong> MacKinnon&rsquo;s Stanley Cup
-          Finals n=6 (one series — the 2022 sweep over Tampa). The peer baseline
-          is one tournament data point, not a stable estimate. Listed in
-          Limitations.
+          <strong>One peer is one data point.</strong> MacKinnon&rsquo;s Finals
+          sample is a single series, the 2022 sweep of Tampa. Adding Matthews,
+          Crosby, or Draisaitl would let us compare McDavid&rsquo;s decline
+          against a distribution of peer declines rather than one number.
         </li>
       </ul>
     </>

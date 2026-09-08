@@ -1,14 +1,13 @@
-import Plot from "@/components/Plot";
 import Tabs from "@/components/Tabs";
-import { Callout, Metric, MetricRow, Table } from "@/components/ui";
 import {
-  fmt,
-  fmtSigned,
-  gameNumberLayout,
-  gameNumberTrace,
-  pointsByGameBars,
-  pointsByGameLayout,
-} from "@/lib/charts";
+  Callout,
+  DataTable,
+  Figure,
+  PageHeader,
+  Stat,
+  StatRow,
+} from "@/components/ui";
+import { fmt, fmtSigned } from "@/lib/charts";
 import {
   Game,
   NHL_CONTEXT_ORDER,
@@ -17,70 +16,79 @@ import {
   mcdavid,
   mean,
 } from "@/lib/data";
+import { GameByGameFigure, GameNumberFigure } from "./ActFigures";
 
-export const metadata = { title: "Three Acts · Variance97" };
+export const metadata = { title: "Three Acts" };
 
 const GAME_COLUMNS = [
   { key: "date", header: "Date" },
   { key: "opponent", header: "Opponent" },
-  { key: "game_context", header: "Context" },
-  { key: "points", header: "Points", numeric: true },
+  { key: "game_context", header: "Stage" },
+  { key: "points", header: "Pts", numeric: true },
   { key: "plus_minus", header: "+/−", numeric: true },
   { key: "result", header: "Result" },
-  { key: "team_score", header: "Team", numeric: true },
-  { key: "opp_score", header: "Opp", numeric: true },
+  { key: "score", header: "Score", numeric: true },
 ];
 
 const gameRows = (games: Game[]) =>
   games.map((g) => ({
     date: g.date,
     opponent: g.opponent,
-    game_context: contextLabel(g.game_context),
+    game_context: contextLabel(g.game_context)
+      .replace("Four Nations Faceoff ", "")
+      .replace("Olympics ", ""),
     points: g.points,
-    plus_minus: g.plus_minus,
+    plus_minus: g.plus_minus > 0 ? `+${g.plus_minus}` : g.plus_minus,
     result: g.result,
-    team_score: g.team_score,
-    opp_score: g.opp_score,
+    score: `${g.team_score}–${g.opp_score}`,
   }));
+
+const RESULT_LEGEND = [
+  { label: "Win", color: "var(--c-mcdavid)" },
+  { label: "Loss", color: "var(--c-neutral-mark)" },
+];
 
 export default function ThreeActsPage() {
   const rsPts = mean(
-    mcdavid.filter((g) => g.game_context === "regular_season").map((g) => g.points),
+    mcdavid
+      .filter((g) => g.game_context === "regular_season")
+      .map((g) => g.points),
   );
 
-  // ---- Act 1: NHL ----
+  // ---- Act I ----
   const byContext = NHL_CONTEXT_ORDER.map((ctx) => {
     const rows = mcdavid.filter((g) => g.game_context === ctx);
-    return {
-      ctx,
-      points: mean(rows.map((g) => g.points)),
-      n: rows.length,
-    };
+    return { ctx, points: mean(rows.map((g) => g.points)), n: rows.length };
   });
 
   const playoffs = mcdavid.filter((g) =>
     PLAYOFF_CONTEXTS.includes(g.game_context),
   );
   const gameNumbers = Array.from(
-    new Set(playoffs.map((g) => g.game_number).filter((n): n is number => n !== null)),
+    new Set(
+      playoffs.map((g) => g.game_number).filter((n): n is number => n !== null),
+    ),
   ).sort((a, b) => a - b);
   const byGameNumber = gameNumbers.map((n) => ({
     gameNumber: n,
     avg: mean(playoffs.filter((g) => g.game_number === n).map((g) => g.points)),
+    n: playoffs.filter((g) => g.game_number === n).length,
   }));
 
-  const nhlOnly = mcdavid.filter((g) => NHL_CONTEXT_ORDER.includes(g.game_context));
+  const nhlOnly = mcdavid.filter((g) =>
+    NHL_CONTEXT_ORDER.includes(g.game_context),
+  );
   const elim = nhlOnly.filter((g) => g.is_elimination_game);
   const elimWins = elim.filter((g) => g.result === "W");
   const elimLosses = elim.filter((g) => g.result === "L");
 
-  // ---- Act 2: Four Nations ----
+  // ---- Act II ----
   const fnf = mcdavid.filter((g) =>
     g.game_context.toLowerCase().includes("four_nations"),
   );
   const fnfPts = mean(fnf.map((g) => g.points));
 
-  // ---- Act 3: Olympics ----
+  // ---- Act III ----
   const oly = mcdavid.filter((g) =>
     g.game_context.toLowerCase().includes("olympic"),
   );
@@ -91,117 +99,169 @@ export default function ThreeActsPage() {
 
   const act1 = (
     <>
-      <h2>McDavid in the NHL Playoffs</h2>
-      <MetricRow>
+      <h2>The rounds get harder. So does everyone.</h2>
+      <p>
+        McDavid&rsquo;s scoring rate holds up through the first three rounds and
+        gives way in the Finals. The more specific pattern is inside the series
+        rather than across them.
+      </p>
+
+      <StatRow>
         {byContext.map(({ ctx, points, n }) => (
-          <Metric
+          <Stat
             key={ctx}
             label={contextLabel(ctx)}
-            value={`${fmt(points)} pts`}
-            delta={
+            value={fmt(points)}
+            unit="pts"
+            accent={ctx === "stanley_cup_finals"}
+            note={
               ctx === "regular_season"
                 ? `n=${n}`
-                : `${fmtSigned(points - rsPts)} vs RS`
+                : `${fmtSigned(points - rsPts)} vs regular season · n=${n}`
             }
           />
         ))}
-      </MetricRow>
+      </StatRow>
 
-      <h3>Late-series production cliff</h3>
-      <p>
-        Phase 1&rsquo;s most-replicated NHL finding: McDavid&rsquo;s points hold
-        up through Game 5 and then fall sharply.
-      </p>
-      <Plot
-        data={gameNumberTrace(byGameNumber)}
-        layout={gameNumberLayout(rsPts, gameNumbers[gameNumbers.length - 1])}
-        height={350}
-        ariaLabel="Line chart of McDavid's average points by playoff game number, with the regular-season average as a dashed baseline"
+      <Figure
+        title="Production holds through Game 5, then falls"
+        subtitle="Average points by game number within a playoff series, all rounds pooled."
+        number={2}
+        caption={
+          <>
+            The most-replicated NHL finding in Phase 1. Later games in a series
+            are also the higher-leverage ones, so fatigue and opponent quality
+            are entangled here — the model page separates them.
+          </>
+        }
+      >
+        <GameNumberFigure
+          points={byGameNumber}
+          regularSeasonAvg={rsPts}
+          maxGame={gameNumbers[gameNumbers.length - 1]}
+        />
+      </Figure>
+
+      <DataTable
+        caption="The values plotted in Fig. 2."
+        columns={[
+          { key: "g", header: "Game in series" },
+          { key: "avg", header: "Avg points", numeric: true },
+          { key: "n", header: "n", numeric: true },
+        ]}
+        rows={byGameNumber.map((r) => ({
+          g: r.gameNumber,
+          avg: fmt(r.avg),
+          n: r.n,
+        }))}
       />
 
-      <h3>Elimination games — wins vs losses</h3>
-      <MetricRow>
-        <Metric label="Regular season avg" value={`${fmt(rsPts)} pts/game`} />
-        <Metric
-          label={`Elimination wins (n=${elimWins.length})`}
-          value={
-            elimWins.length
-              ? `${fmt(mean(elimWins.map((g) => g.points)))} pts/game`
-              : "—"
-          }
+      <h3>Elimination games</h3>
+      <p>
+        The split runs the opposite way to the narrative: his average is{" "}
+        <em>higher</em> in elimination games than outside them, and the average
+        is carried by the wins.
+      </p>
+      <StatRow>
+        <Stat label="Regular season" value={fmt(rsPts)} unit="pts/game" />
+        <Stat
+          label={`Elimination wins · n=${elimWins.length}`}
+          value={elimWins.length ? fmt(mean(elimWins.map((g) => g.points))) : "—"}
+          unit="pts/game"
         />
-        <Metric
-          label={`Elimination losses (n=${elimLosses.length})`}
+        <Stat
+          label={`Elimination losses · n=${elimLosses.length}`}
           value={
-            elimLosses.length
-              ? `${fmt(mean(elimLosses.map((g) => g.points)))} pts/game`
-              : "—"
+            elimLosses.length ? fmt(mean(elimLosses.map((g) => g.points))) : "—"
           }
+          unit="pts/game"
         />
-      </MetricRow>
-      <p className="caption">
-        McDavid&rsquo;s average points are actually <em>higher</em> in
-        elimination games than non-elimination games — driven by the wins. The
-        split is what Phase 2 Test 2 picked up: large effect size on losses,
-        small sample.
+      </StatRow>
+      <p className="figure-sub">
+        Phase 2 Test 2 picked this up as a large effect size on the losses — on
+        a sample of {elimLosses.length}, which is too small to test.
       </p>
     </>
   );
 
   const act2 = (
     <>
-      <h2>McDavid at the 2025 Four Nations Face-Off</h2>
+      <h2>He won it, and scored the winner</h2>
       <p>
-        Canada won the tournament. McDavid scored the OT winner in the gold
-        medal game vs the United States. The only loss was the group-stage game
-        against the US (with Hellebuyck in net).
+        Canada took the 2025 Four Nations Face-Off, and McDavid scored the
+        overtime goal in the final against the United States. His only loss in
+        the tournament was the group-stage meeting with the same opponent —
+        Connor Hellebuyck in net.
       </p>
-      <Plot
-        data={pointsByGameBars(fnf)}
-        layout={pointsByGameLayout("Four Nations — McDavid game-by-game")}
-        height={380}
-        ariaLabel="Bar chart of McDavid's points in each Four Nations game, colored by win or loss"
-      />
-      <Table columns={GAME_COLUMNS} rows={gameRows(fnf)} />
-      <MetricRow>
-        <Metric
-          label="FNF avg"
-          value={`${fmt(fnfPts)} pts/game`}
-          delta={`${fmtSigned(fnfPts - rsPts)} vs RS`}
+
+      <Figure
+        title="Four Nations Face-Off, game by game"
+        subtitle="Points per game. Wins carry the series color; losses are neutral."
+        legend={RESULT_LEGEND}
+        number={3}
+        caption="Result is labelled on every column as well as colored, so the outcome never depends on hue alone."
+      >
+        <GameByGameFigure
+          games={fnf}
+          ariaLabel="Bar chart of McDavid's points in each Four Nations game. Each column is labelled with the opponent, date, and result. Values are listed in the table below."
         />
-        <Metric label="Tournament outcome" value="🥇 Gold" />
-      </MetricRow>
+      </Figure>
+
+      <DataTable caption="Every Four Nations game." columns={GAME_COLUMNS} rows={gameRows(fnf)} />
+
+      <StatRow>
+        <Stat
+          label="Tournament average"
+          value={fmt(fnfPts)}
+          unit="pts/game"
+          note={`${fmtSigned(fnfPts - rsPts)} vs regular season · n=${fnf.length}`}
+        />
+        <Stat label="Outcome" value="Gold" note="Won the final in overtime." />
+      </StatRow>
     </>
   );
 
   const act3 = (
     <>
-      <h2>McDavid at the 2026 Milan Cortina Olympics</h2>
+      <h2>A scoring record, and one pointless night</h2>
       <p>
-        McDavid set the <strong>Olympic scoring record</strong> with 13 points in
-        6 games. Then came the gold medal game against the United States —
-        Connor Hellebuyck in net, Canada lost 1&ndash;2 in OT, McDavid was held
-        pointless.
+        McDavid set the Olympic scoring record at Milan Cortina with{" "}
+        {olyTotal} points in six games. Then came the gold medal game against
+        the United States: Hellebuyck in net, a 1&ndash;2 overtime loss, and
+        McDavid held without a point.
       </p>
-      <Plot
-        data={pointsByGameBars(olyCompetitive)}
-        layout={pointsByGameLayout(
-          "Olympics — competitive games (group + knockouts)",
-        )}
-        height={380}
-        ariaLabel="Bar chart of McDavid's points in each competitive Olympic game, colored by win or loss"
+
+      <Figure
+        title="Olympic competitive games"
+        subtitle="Group stage and knockouts. Exhibitions excluded from the chart, included in the table."
+        legend={RESULT_LEGEND}
+        number={4}
+        caption="The single scoreless column is the gold medal game."
+      >
+        <GameByGameFigure
+          games={olyCompetitive}
+          ariaLabel="Bar chart of McDavid's points in each competitive Olympic game. Each column is labelled with the opponent, date, and result. Values are listed in the table below."
+        />
+      </Figure>
+
+      <DataTable
+        caption="Every Olympic game, exhibitions included."
+        columns={GAME_COLUMNS}
+        rows={gameRows(oly)}
       />
-      <Table columns={GAME_COLUMNS} rows={gameRows(oly)} />
-      <MetricRow>
-        <Metric label="Olympic points (total)" value={olyTotal} />
-        <Metric label="Gold medal game" value="0 pts, −2" delta="vs Hellebuyck" />
-        <Metric label="Tournament outcome" value="🥈 Silver" />
-      </MetricRow>
-      <Callout kind="warning">
+
+      <StatRow>
+        <Stat label="Olympic points" value={olyTotal} note="A tournament record." />
+        <Stat label="Gold medal game" value="0" unit="pts" note="Minus two, versus Hellebuyck." />
+        <Stat label="Outcome" value="Silver" note="Lost the final in overtime." />
+      </StatRow>
+
+      <Callout kind="warn" label="The pattern, and its limit">
         <p>
-          The pattern across both international tournaments is the same:
-          McDavid&rsquo;s only pointless games come against the United States
-          with Hellebuyck in net. n=3 — see Limitations.
+          Across both tournaments, McDavid&rsquo;s only pointless games come
+          against the United States with Hellebuyck starting. That is three
+          games, inside one window — a pattern worth naming and far too small to
+          test.
         </p>
       </Callout>
     </>
@@ -209,17 +269,22 @@ export default function ThreeActsPage() {
 
   return (
     <>
-      <h1 className="page-title">Three Acts</h1>
-      <p className="caption">
-        How McDavid&rsquo;s production moves across three high-stakes contexts:
-        the NHL Stanley Cup Playoffs, the 2025 Four Nations Face-Off, and the
-        2026 Winter Olympics.
-      </p>
+      <PageHeader
+        kicker="Three Acts"
+        title="Three stages, one question"
+        dek={
+          <>
+            The same player across the Stanley Cup Playoffs, the 2025 Four
+            Nations Face-Off, and the 2026 Winter Olympics — measured against
+            his own regular-season baseline.
+          </>
+        }
+      />
       <Tabs
         labels={[
-          "Act 1 — Stanley Cup Playoffs",
-          "Act 2 — Four Nations Face-Off",
-          "Act 3 — 2026 Winter Olympics",
+          "I · Stanley Cup Playoffs",
+          "II · Four Nations",
+          "III · Winter Olympics",
         ]}
         panels={[act1, act2, act3]}
       />
