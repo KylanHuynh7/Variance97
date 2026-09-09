@@ -49,6 +49,12 @@
   --tint-caveat: #fceded;
   --tint-caveat-edge: #d03b3b;
 
+  /* --- masthead: always the navy sweater, in both themes --- */
+  --bar: #041e42;
+  --bar-ink: #ffffff;
+  --bar-ink-dim: #9db4ce;
+  --bar-hover: rgba(255, 255, 255, 0.09);
+
   /* --- measure & rhythm --- */
   --measure: 34rem;
   --wide: 60rem;
@@ -84,6 +90,11 @@
   --c-ink-muted: #7e96b3;
   --c-surface: #0a2647;
 
+  --bar: #0a2647;
+  --bar-ink: #ffffff;
+  --bar-ink-dim: #9db4ce;
+  --bar-hover: rgba(255, 255, 255, 0.09);
+
   --tint-note: #0b2c4d;
   --tint-key: #0c2c33;
   --tint-warn: #2b2412;
@@ -116,6 +127,11 @@
   --c-ink: #e8eef6;
   --c-ink-muted: #7e96b3;
   --c-surface: #0a2647;
+
+  --bar: #0a2647;
+  --bar-ink: #ffffff;
+  --bar-ink-dim: #9db4ce;
+  --bar-hover: rgba(255, 255, 255, 0.09);
 
   --tint-note: #0b2c4d;
   --tint-key: #0c2c33;
@@ -152,9 +168,10 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: saturate(1.6) blur(10px);
-  border-bottom: 1px solid var(--rule);
+  background: var(--bar);
+  /* The orange keyline under the navy is the team's own pairing, and it does
+     the identity work that navy-as-text-color alone could not. */
+  border-bottom: 3px solid var(--accent);
 }
 
 .masthead-inner {
@@ -169,10 +186,10 @@ body {
 
 .wordmark {
   font-family: var(--font-serif), Georgia, serif;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.015em;
-  color: var(--ink);
+  color: var(--bar-ink);
   text-decoration: none;
   white-space: nowrap;
   display: flex;
@@ -186,6 +203,7 @@ body {
 
 .masthead nav {
   display: flex;
+  align-items: stretch;
   gap: 0.25rem;
   margin-left: auto;
   overflow-x: auto;
@@ -195,25 +213,32 @@ body {
 
 .masthead nav a {
   position: relative;
-  padding: 0.3rem 0.6rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.6rem;
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  color: var(--ink-secondary);
+  color: var(--bar-ink-dim);
   text-decoration: none;
   white-space: nowrap;
   border-radius: 5px;
 }
-.masthead nav a:hover { color: var(--ink); background: var(--surface-sunk); }
-.masthead nav a[aria-current="page"] { color: var(--ink); font-weight: 650; }
+.masthead nav a:hover { color: var(--bar-ink); background: var(--bar-hover); }
+.masthead nav a { border-radius: 0; }
+.masthead nav a[aria-current="page"] { color: var(--bar-ink); font-weight: 650; }
+/* The active marker sits on the orange keyline, so it reads as a notch in the
+   team stripe rather than a second underline. */
 .masthead nav a[aria-current="page"]::after {
   content: "";
   position: absolute;
-  left: 0.6rem;
-  right: 0.6rem;
-  bottom: -0.5rem;
-  height: 2px;
-  background: var(--accent);
+  left: 0.4rem;
+  right: 0.4rem;
+  /* Sits inside the bar: the nav scrolls horizontally, and overflow-x clips
+     anything placed below its content box. */
+  bottom: 0;
+  height: 3px;
+  background: var(--bar-ink);
 }
 
 /* ============================ page shell ============================ */

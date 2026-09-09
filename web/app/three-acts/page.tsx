@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Tabs from "@/components/Tabs";
 import {
   Callout,
@@ -286,7 +287,11 @@ export default function ThreeActsPage() {
           "II · Four Nations",
           "III · Winter Olympics",
         ]}
-        panels={[act1, act2, act3]}
+        panels={[
+          <Fragment key="playoffs">{act1}</Fragment>,
+          <Fragment key="four-nations">{act2}</Fragment>,
+          <Fragment key="olympics">{act3}</Fragment>,
+        ]}
       />
     </>
   );
