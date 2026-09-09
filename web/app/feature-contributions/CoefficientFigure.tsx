@@ -6,12 +6,13 @@ import { ChartTheme, SignedItem, signedBars, signedLayout } from "@/lib/charts";
 
 export default function CoefficientFigure({ items }: { items: SignedItem[] }) {
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: signedBars(t, items, ""),
       layout: signedLayout(
         t,
         "Coefficient (standardized features)",
         items.map((i) => i.value),
+        w,
       ),
     }),
     [items],

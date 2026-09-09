@@ -12,7 +12,7 @@
  * charts follow dark mode without a reload.
  */
 import { useEffect, useRef, useState } from "react";
-import { ChartTheme, readChartTheme } from "@/lib/charts";
+import { COMPACT_WIDTH, ChartTheme, readChartTheme } from "@/lib/charts";
 
 type PlotlyModule = {
   newPlot: (
@@ -23,11 +23,16 @@ type PlotlyModule = {
   ) => Promise<unknown>;
   purge: (node: HTMLElement) => void;
   Plots: { resize: (node: HTMLElement) => void };
+  react: (
+    node: HTMLElement,
+    data: unknown,
+    layout: unknown,
+  ) => Promise<unknown>;
 };
 
 type PlotProps = {
-  /** Built from the theme this component resolves. */
-  build: (theme: ChartTheme) => {
+  /** Built from the theme this component resolves, and its measured width. */
+  build: (theme: ChartTheme, width: number) => {
     data: Record<string, unknown>[];
     layout: Record<string, unknown>;
   };
@@ -54,7 +59,7 @@ export default function Plot({ build, height = 340, ariaLabel }: PlotProps) {
 
     let disposed = false;
     let observer: ResizeObserver | undefined;
-    const { data, layout } = build(theme);
+    const { data, layout } = build(theme, node.clientWidth || 640);
 
     import("plotly.js-basic-dist-min").then((mod) => {
       const Plotly = ((mod as { default?: unknown }).default ??
@@ -77,8 +82,15 @@ export default function Plot({ build, height = 340, ariaLabel }: PlotProps) {
         observer = new ResizeObserver(() => {
           const width = node.clientWidth;
           if (width === lastWidth) return;
+          const crossedBreakpoint =
+            lastWidth < COMPACT_WIDTH !== width < COMPACT_WIDTH;
           lastWidth = width;
-          Plotly.Plots.resize(node);
+          if (crossedBreakpoint) {
+            const next = build(theme, width);
+            Plotly.react(node, next.data, { ...next.layout, height });
+          } else {
+            Plotly.Plots.resize(node);
+          }
         });
         observer.observe(node);
       });

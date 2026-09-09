@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Newsreader, Inter, IBM_Plex_Mono } from "next/font/google";
 import Nav from "@/components/Nav";
 import { generatedAt, mcdavid, pipeline } from "@/lib/data";
@@ -32,6 +32,14 @@ export const metadata: Metadata = {
   description:
     "A data-science investigation of Connor McDavid's performance in the NHL " +
     "Stanley Cup Playoffs, the 2025 Four Nations Face-Off, and the 2026 Winter Olympics.",
+};
+
+/* viewport-fit=cover is what makes env(safe-area-inset-*) resolve to real
+   values on notched iPhones; without it they are always 0. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

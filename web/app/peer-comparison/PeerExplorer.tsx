@@ -47,9 +47,9 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
   const metricLabel = METRICS.find((m) => m.key === metric)!.label;
 
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: peerBars(t, chartLabels, mcd, mac, "per game"),
-      layout: peerLayout(t, `${metricLabel} per game`),
+      layout: peerLayout(t, `${metricLabel} per game`, w),
     }),
     [chartLabels, mcd, mac, metricLabel],
   );

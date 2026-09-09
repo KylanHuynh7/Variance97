@@ -21,9 +21,9 @@ export function GameNumberFigure({
   maxGame: number;
 }) {
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: gameNumberTrace(t, points),
-      layout: gameNumberLayout(t, regularSeasonAvg, maxGame),
+      layout: gameNumberLayout(t, regularSeasonAvg, maxGame, w),
     }),
     [points, regularSeasonAvg, maxGame],
   );
@@ -44,9 +44,9 @@ export function GameByGameFigure({
   ariaLabel: string;
 }) {
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: gameBars(t, games),
-      layout: gameLayout(t),
+      layout: gameLayout(t, w),
     }),
     [games],
   );

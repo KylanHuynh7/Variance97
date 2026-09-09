@@ -49,15 +49,24 @@
   --tint-caveat: #fceded;
   --tint-caveat-edge: #d03b3b;
 
+  /* Notch / home-indicator insets; 0 everywhere else. */
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+
   /* --- masthead: always the navy sweater, in both themes --- */
   --bar: #041e42;
   --bar-ink: #ffffff;
   --bar-ink-dim: #9db4ce;
   --bar-hover: rgba(255, 255, 255, 0.09);
 
-  /* --- measure & rhythm --- */
-  --measure: 34rem;
-  --wide: 60rem;
+  /* --- measure & rhythm ---
+     The measure is wide for an editorial column (~80 characters rather than
+     the classic 65) so paragraphs read as blocks on a laptop instead of tall
+     narrow strips. The body size is bumped to match, which keeps the line
+     length honest at the wider column. */
+  --measure: 44rem;
+  --wide: 68rem;
 
   color-scheme: light;
 }
@@ -145,6 +154,8 @@
 
 html {
   background: var(--paper);
+  /* Stops iOS inflating type when the phone is rotated to landscape. */
+  -webkit-text-size-adjust: 100%;
   /* The nav is sticky; keep anchor jumps clear of it. */
   scroll-padding-top: 5rem;
 }
@@ -154,8 +165,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: 1.0625rem;
+  line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -274,7 +285,7 @@ body {
 h1.display {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 600;
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2.6rem, 6.2vw, 4.4rem);
   line-height: 1.02;
   letter-spacing: -0.025em;
   margin: 0 0 1.25rem;
@@ -283,7 +294,7 @@ h1.display {
 
 .dek {
   font-family: var(--font-serif), Georgia, serif;
-  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
   line-height: 1.45;
   color: var(--ink-secondary);
   margin: 0 0 2.5rem;
@@ -293,7 +304,7 @@ h1.display {
 h2 {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 600;
-  font-size: 1.85rem;
+  font-size: 2rem;
   line-height: 1.2;
   letter-spacing: -0.015em;
   margin: 3.5rem 0 0.75rem;
@@ -310,7 +321,7 @@ h3 {
   margin: 2.5rem 0 0.5rem;
 }
 
-p { margin: 0 0 1.15rem; text-wrap: pretty; }
+p { margin: 0 0 1.05rem; text-wrap: pretty; }
 
 .lede::first-letter {
   float: left;
@@ -479,9 +490,9 @@ figcaption .fig-no {
 .callout > *:last-child { margin-bottom: 0; }
 .callout .callout-label {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 0.45rem;
   color: var(--ink-secondary);
@@ -551,7 +562,9 @@ thead th:last-child, tbody td:last-child { padding-right: 0; }
 
 select {
   font: inherit;
-  font-size: 0.88rem;
+  /* Must stay >= 16px: iOS Safari zooms the page when a focused control's text
+     is smaller than that, and the zoom doesn't undo itself on blur. */
+  font-size: 1rem;
   padding: 0.4rem 2rem 0.4rem 0.65rem;
   border: 1px solid var(--rule-strong);
   border-radius: 7px;
@@ -720,8 +733,38 @@ pre code { background: none; padding: 0; font-size: inherit; }
 /* ============================ responsive ============================ */
 
 @media (max-width: 46rem) {
-  .masthead-inner { padding: 0 1.1rem; gap: 1rem; }
-  .page { padding: 2rem 1.1rem 4rem; }
+  .masthead-inner {
+    padding: 0 calc(1.1rem + var(--safe-r)) 0 calc(1.1rem + var(--safe-l));
+    gap: 1rem;
+  }
+  .page {
+    padding: 2rem calc(1.1rem + var(--safe-r)) calc(4rem + var(--safe-b))
+      calc(1.1rem + var(--safe-l));
+  }
+
+  /* Touch targets: 44px is the iOS minimum, and the desktop nav links are
+     only as tall as their text. */
+  .masthead nav a { min-height: 44px; padding: 0 0.55rem; }
+  .chip { min-height: 44px; display: inline-flex; align-items: center; }
+  select { min-height: 44px; }
+  details summary { min-height: 44px; align-items: center; }
+  .card-link { min-height: 44px; }
+  .tabs button { min-height: 44px; padding-bottom: 0.55rem; }
+  .wordmark { min-height: 44px; align-items: center; }
+
+  /* Inline links inside body copy are intentionally left at text size —
+     WCAG 2.5.8 exempts them, and padding them out would break the line. */
+
+  /* Tabs can outgrow the viewport; let them scroll rather than wrap into a
+     stack that pushes the content down. */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 1.25rem;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { white-space: nowrap; }
   h1.display { font-size: clamp(2rem, 9vw, 2.6rem); }
   .stat-row { grid-template-columns: 1fr 1fr; }
   .stat { padding-right: 1rem; }

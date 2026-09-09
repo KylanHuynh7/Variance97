@@ -15,6 +15,11 @@
  * neutral, and every bar is direct-labelled W/L so hue is never load-bearing.
  */
 
+/** Below this container width a chart switches to its compact treatment:
+ *  smaller tick text and roomier margins, so rotated category labels stay
+ *  inside the figure instead of spilling past its right edge on a phone. */
+export const COMPACT_WIDTH = 520;
+
 export type ChartTheme = {
   mcdavid: string;
   mackinnon: string;
@@ -68,9 +73,11 @@ const FONT_STACK =
   'var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif';
 
 /** Chrome shared by every figure: recessive hairline grid, no Plotly legend. */
-export function baseLayout(t: ChartTheme) {
+export function baseLayout(t: ChartTheme, width = 640) {
+  const compact = width < COMPACT_WIDTH;
+  const tick = compact ? 10.5 : 12;
   return {
-    font: { family: FONT_STACK, size: 12.5, color: t.inkMuted },
+    font: { family: FONT_STACK, size: compact ? 11.5 : 12.5, color: t.inkMuted },
     paper_bgcolor: "rgba(0,0,0,0)",
     plot_bgcolor: "rgba(0,0,0,0)",
     showlegend: false,
@@ -83,7 +90,7 @@ export function baseLayout(t: ChartTheme) {
       gridcolor: t.grid,
       linecolor: t.axis,
       zerolinecolor: t.axis,
-      tickfont: { size: 12, color: t.inkMuted },
+      tickfont: { size: tick, color: t.inkMuted },
       // Deliberately no automargin: it grows the SVG past layout.height, which
       // pushes the axis band outside the figure's bordered box.
       automargin: false,
@@ -92,7 +99,7 @@ export function baseLayout(t: ChartTheme) {
       gridcolor: t.grid,
       linecolor: t.axis,
       zerolinecolor: t.axis,
-      tickfont: { size: 12, color: t.inkMuted },
+      tickfont: { size: tick, color: t.inkMuted },
       automargin: true,
     },
   };
@@ -136,8 +143,9 @@ export function peerBars(
   ];
 }
 
-export function peerLayout(t: ChartTheme, yTitle: string) {
-  const base = baseLayout(t);
+export function peerLayout(t: ChartTheme, yTitle: string, width = 640) {
+  const base = baseLayout(t, width);
+  const compact = width < COMPACT_WIDTH;
   return {
     ...base,
     barmode: "group",
@@ -149,7 +157,7 @@ export function peerLayout(t: ChartTheme, yTitle: string) {
       rangemode: "tozero",
     },
     xaxis: { ...base.xaxis, showgrid: false },
-    margin: { t: 10, b: 58, l: 58, r: 14 },
+    margin: { t: 10, b: compact ? 74 : 58, l: compact ? 42 : 58, r: compact ? 30 : 14 },
   };
 }
 
@@ -192,8 +200,9 @@ export function gameBars(t: ChartTheme, games: ResultGame[]) {
   ];
 }
 
-export function gameLayout(t: ChartTheme) {
-  const base = baseLayout(t);
+export function gameLayout(t: ChartTheme, width = 640) {
+  const base = baseLayout(t, width);
+  const compact = width < COMPACT_WIDTH;
   return {
     ...base,
     bargap: 0.6,
@@ -204,7 +213,7 @@ export function gameLayout(t: ChartTheme) {
       dtick: 1,
     },
     xaxis: { ...base.xaxis, showgrid: false },
-    margin: { t: 10, b: 62, l: 52, r: 14 },
+    margin: { t: 10, b: compact ? 76 : 62, l: compact ? 40 : 52, r: compact ? 26 : 14 },
   };
 }
 
@@ -233,8 +242,10 @@ export function gameNumberLayout(
   t: ChartTheme,
   regularSeasonAvg: number,
   maxGame: number,
+  width = 640,
 ) {
-  const base = baseLayout(t);
+  const base = baseLayout(t, width);
+  const compact = width < COMPACT_WIDTH;
   return {
     ...base,
     xaxis: {
@@ -250,7 +261,7 @@ export function gameNumberLayout(
       ...base.yaxis,
       title: { text: "Points per game", font: { size: 12, color: t.inkMuted } },
     },
-    margin: { t: 26, b: 52, l: 58, r: 14 },
+    margin: { t: 26, b: 52, l: compact ? 44 : 58, r: compact ? 20 : 14 },
     shapes: [
       {
         type: "line",
@@ -305,8 +316,10 @@ export function signedLayout(
   t: ChartTheme,
   xTitle: string,
   values: number[],
+  width = 640,
 ) {
-  const base = baseLayout(t);
+  const base = baseLayout(t, width);
+  const compact = width < COMPACT_WIDTH;
   const min = Math.min(0, ...values);
   const max = Math.max(0, ...values);
   const pad = (max - min) * 0.12 || 1;
@@ -315,12 +328,20 @@ export function signedLayout(
     bargap: 0.45,
     xaxis: {
       ...base.xaxis,
-      title: { text: xTitle, font: { size: 12, color: t.inkMuted } },
+      // The long feature names push the plot area right, so on a phone the
+      // centred axis title runs off the figure. The caption carries it there.
+      title: compact
+        ? undefined
+        : { text: xTitle, font: { size: 12, color: t.inkMuted } },
       range: [min - pad, max + pad],
       zeroline: true,
       zerolinewidth: 1,
     },
-    yaxis: { ...base.yaxis, showgrid: false, tickfont: { size: 12, color: t.ink } },
-    margin: { t: 10, b: 52, l: 10, r: 22 },
+    yaxis: {
+      ...base.yaxis,
+      showgrid: false,
+      tickfont: { size: width < COMPACT_WIDTH ? 9.5 : 12, color: t.ink },
+    },
+    margin: { t: 10, b: compact ? 34 : 52, l: 10, r: compact ? 30 : 22 },
   };
 }

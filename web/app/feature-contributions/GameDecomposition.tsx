@@ -29,9 +29,14 @@ export default function GameDecomposition({ model }: { model: Model }) {
   );
 
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: signedBars(t, items, "pts"),
-      layout: signedLayout(t, "Contribution to predicted points", items.map((i) => i.value)),
+      layout: signedLayout(
+        t,
+        "Contribution to predicted points",
+        items.map((i) => i.value),
+        w,
+      ),
     }),
     [items],
   );

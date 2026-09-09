@@ -14,9 +14,9 @@ export default function PeerFigure({
   mac: (number | null)[];
 }) {
   const build = useCallback(
-    (t: ChartTheme) => ({
+    (t: ChartTheme, w: number) => ({
       data: peerBars(t, labels, mcd, mac, "pts/game"),
-      layout: peerLayout(t, "Points per game"),
+      layout: peerLayout(t, "Points per game", w),
     }),
     [labels, mcd, mac],
   );
