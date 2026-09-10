@@ -22,7 +22,6 @@ Usage:
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -34,19 +33,9 @@ from apply_features import apply_features  # type: ignore
 from fetch_boxscores import enrich_rows  # type: ignore
 from fetch_player_log import PLAYERS, Player, fetch_player_log  # type: ignore
 from fetch_team_stats import build_team_stats  # type: ignore
+from seasons import current_season_start_year, season_ids, season_label  # type: ignore
 
 DATA_DIR = Path(__file__).resolve().parent.parent
-SEASONS_TO_FETCH = ("20212022", "20222023", "20232024", "20242025", "20252026")
-
-
-def _current_season_label() -> str:
-    """Return the season label whose window contains today (e.g. '2025-26')."""
-    now = datetime.now(timezone.utc)
-    if now.month >= 8:  # NHL season starts Oct; treat Aug+ as next season window
-        start = now.year
-    else:
-        start = now.year - 1
-    return f"{start}-{str(start + 1)[-2:]}"
 
 
 def _refresh_player(player: Player, source_csv: Path) -> int:
@@ -63,18 +52,35 @@ def _refresh_player(player: Player, source_csv: Path) -> int:
         existing_dates = set()
         print("  existing rows: 0  (cold start)")
 
+    # Rows whose boxscore enrichment failed on an earlier run. Without this,
+    # a single network blip during enrichment was permanent: the row landed
+    # with a null result, its date joined existing_dates, and it was filtered
+    # out before enrichment on every subsequent run. Downstream that null
+    # becomes the string "None", which compute_elimination doesn't count as a
+    # loss -- so one blip quietly corrupts a whole series' elimination flags.
+    stale_dates: set[str] = set()
+    if len(existing) and "result" in existing.columns:
+        stale = existing[existing["result"].isna()]
+        stale_dates = set(stale["date"].astype(str))
+
     # Fetch all configured seasons; we'll filter to truly new games below.
-    fetched = fetch_player_log(player, seasons=SEASONS_TO_FETCH)
+    fetched = fetch_player_log(player, seasons=season_ids())
 
     new_rows = [r for r in fetched if r["date"] not in existing_dates]
-    if not new_rows:
+    retry_rows = [r for r in fetched if r["date"] in stale_dates]
+
+    if not new_rows and not retry_rows:
         print("  no new games. up to date.")
         return 0
 
+    if retry_rows:
+        print(f"  retrying {len(retry_rows)} row(s) with missing boxscore data")
     print(f"  found {len(new_rows)} new game(s); enriching boxscores...")
-    new_rows = enrich_rows(new_rows, team_abbrev=player.team_abbrev)
+    # keep="last" on the merge below lets a retried row replace the stale one.
+    added = len(new_rows)
+    batch = enrich_rows(new_rows + retry_rows, team_abbrev=player.team_abbrev)
 
-    new_df = pd.DataFrame(new_rows)
+    new_df = pd.DataFrame(batch)
     # Drop columns that aren't part of the source schema (e.g. gameId,
     # home_away if not used downstream). Keep the source schema canonical.
     source_cols = list(existing.columns) if len(existing) else None
@@ -87,13 +93,18 @@ def _refresh_player(player: Player, source_csv: Path) -> int:
     merged = pd.concat([existing, new_df], ignore_index=True, sort=False)
     merged = merged.drop_duplicates(subset=["date"], keep="last").reset_index(drop=True)
     merged.to_csv(source_csv, index=False)
-    print(f"  wrote {len(merged)} rows -> {source_csv.name} (+{len(new_rows)})")
-    return len(new_rows)
+    print(f"  wrote {len(merged)} rows -> {source_csv.name} (+{added})")
+
+    still_missing = int(merged["result"].isna().sum()) if "result" in merged else 0
+    if still_missing:
+        print(f"  WARNING: {still_missing} row(s) still missing boxscore data; "
+              f"they will be retried on the next run")
+    return added
 
 
 def main() -> None:
     print(f"=== variance97 update pipeline ===")
-    print(f"current season window: {_current_season_label()}")
+    print(f"current season window: {season_label(current_season_start_year())}")
 
     mcdavid = PLAYERS["mcdavid"]
     mackinnon = PLAYERS["mackinnon"]
