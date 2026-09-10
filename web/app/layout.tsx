@@ -60,7 +60,7 @@ export default function RootLayout({
           <footer className="colophon">
             <div>
               <strong>About</strong>
-              Built from a notebook-driven investigation across four phases.
+              Built from a notebook-driven investigation across five phases.
               Source, methodology, and the full limitations document are on{" "}
               <a
                 href="https://github.com/KylanHuynh7/Variance97"

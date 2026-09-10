@@ -45,12 +45,30 @@ export default function Plot({ build, height = 340, ariaLabel }: PlotProps) {
   const [theme, setTheme] = useState<ChartTheme | null>(null);
 
   // Resolve after mount (needs the DOM) and again whenever the scheme flips.
+  //
+  // Two things can flip it, and the palette is only correct if both are
+  // watched: the OS setting, via the media query, and an explicit choice,
+  // which globals.css reads off a [data-theme] attribute on <html>. An
+  // attribute change fires no media query, so it needs its own observer --
+  // without it a theme toggle would restyle the page and leave every chart
+  // on the outgoing palette.
   useEffect(() => {
-    setTheme(readChartTheme());
+    const reread = () => setTheme(readChartTheme());
+    reread();
+
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => setTheme(readChartTheme());
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    mq.addEventListener("change", reread);
+
+    const observer = new MutationObserver(reread);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => {
+      mq.removeEventListener("change", reread);
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {

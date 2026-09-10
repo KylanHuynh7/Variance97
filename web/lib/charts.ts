@@ -7,7 +7,7 @@
  * mode work.
  *
  * Palette provenance — validated with the data-viz validator against both
- * surfaces (light #fdfcfa, dark #17171a):
+ * surfaces (light #ffffff, dark #0a2647):
  *   McDavid vs MacKinnon   worst CVD ΔE 20.3 light / 14.0 dark   (>= 8 target)
  *   positive vs negative   worst CVD ΔE 21.6 light / 19.2 dark
  * Win/loss is deliberately NOT green-vs-red: that pair measures ΔE 4.1 under
@@ -33,17 +33,20 @@ export type ChartTheme = {
   surface: string;
 };
 
+/** Used only if a custom property fails to resolve. Must mirror the light
+ *  values on :root in globals.css — a stale copy here means a var rename
+ *  silently reverts every chart to a palette nobody chose. */
 const FALLBACK: ChartTheme = {
   mcdavid: "#fc4c02",
   mackinnon: "#8e3050",
   positive: "#2a78d6",
   negative: "#e34948",
-  neutralMark: "#a9a69c",
-  grid: "#e3e1d9",
-  axis: "#c9c6bb",
-  ink: "#14130f",
-  inkMuted: "#77756e",
-  surface: "#fdfcfa",
+  neutralMark: "#7c8ca0",
+  grid: "#e4eaf1",
+  axis: "#b9c6d6",
+  ink: "#041e42",
+  inkMuted: "#566579",
+  surface: "#ffffff",
 };
 
 const VAR_NAMES: Record<keyof ChartTheme, string> = {

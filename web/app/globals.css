@@ -236,6 +236,16 @@ body {
   border-radius: 5px;
 }
 .masthead nav a:hover { color: var(--bar-ink); background: var(--bar-hover); }
+
+/* Links had no focus style of their own, so keyboard focus fell back to the
+   UA ring — a dark outline that all but disappears against the navy bar.
+   White on the bar, accent orange on the page. */
+.masthead nav a:focus-visible,
+.wordmark:focus-visible {
+  outline: 2px solid var(--bar-ink);
+  outline-offset: 2px;
+}
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .masthead nav a { border-radius: 0; }
 .masthead nav a[aria-current="page"] { color: var(--bar-ink); font-weight: 650; }
 /* The active marker sits on the orange keyline, so it reads as a notch in the
