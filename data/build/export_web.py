@@ -60,7 +60,9 @@ GAME_COLUMNS = [
 
 def _clean(value):
     """JSON-safe scalar: NaN/NaT -> None, numpy scalars -> Python scalars."""
-    if value is None or (isinstance(value, float) and math.isnan(value)):
+    # pd.NaT is not a float and not a Timestamp, so it slipped past both
+    # branches below and reached json.dumps as a NaTType, which raises.
+    if value is None or value is pd.NaT or (isinstance(value, float) and math.isnan(value)):
         return None
     if isinstance(value, (np.bool_, bool)):
         return bool(value)
@@ -98,6 +100,19 @@ def prepare(df: pd.DataFrame):
     df["is_elimination_game"] = df["is_elimination_game"].astype(int)
     df["is_back_to_back"] = df["is_back_to_back"].astype(int)
 
+    # Pin the dummy encoding to NHL_CONTEXTS so the reference level is
+    # regular_season, deliberately and permanently.
+    #
+    # Plain get_dummies(drop_first=True) drops whichever category sorts first
+    # among those *present in the data*, which was conf_finals. Every context
+    # coefficient was therefore measured against the Conference Finals while
+    # the page read as though it were measured against the regular season --
+    # and had a future refresh ever dropped the conf_finals rows, the baseline
+    # would have silently moved again. Declaring the categories fixes both:
+    # the columns no longer depend on which contexts happen to be present.
+    df[CATEGORICAL_FEATURES[0]] = pd.Categorical(
+        df[CATEGORICAL_FEATURES[0]], categories=NHL_CONTEXTS
+    )
     X = pd.concat([
         df[NUMERIC_FEATURES].astype(float),
         pd.get_dummies(df[CATEGORICAL_FEATURES], drop_first=True).astype(float),
@@ -134,6 +149,9 @@ def build_model_section(mcdavid: pd.DataFrame) -> dict:
 
     return {
         "feature_names": list(X.columns),
+        # The dropped dummy category. Every game_context_* coefficient is
+        # measured against this level, so the page has to be able to say so.
+        "reference_context": NHL_CONTEXTS[0],
         "intercept": round(float(ridge.intercept_), 6),
         "scaler_mean": [round(float(v), 6) for v in scaler.mean_],
         "scaler_scale": [round(float(v), 6) for v in scaler.scale_],

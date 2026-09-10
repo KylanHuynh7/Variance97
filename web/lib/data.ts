@@ -40,6 +40,8 @@ export type ModelGame = {
 
 export type Model = {
   feature_names: string[];
+  /** The dropped dummy category every game_context_* coefficient is measured against. */
+  reference_context: string;
   intercept: number;
   scaler_mean: number[];
   scaler_scale: number[];
@@ -124,7 +126,9 @@ export function countByContext(games: Game[], contexts: string[]): number[] {
   );
 }
 
+/** NaN on an empty list, which `fmt` renders as an em dash rather than "NaN". */
 export function mean(values: number[]): number {
+  if (values.length === 0) return NaN;
   return values.reduce((s, v) => s + v, 0) / values.length;
 }
 

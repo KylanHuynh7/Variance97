@@ -13,10 +13,13 @@ is_elimination_game rule:
     True -- a single loss ends the run.
   - Regular season, exhibition, group stage: always False.
 
-ML features:
-  - rest_days        : days since last game in the dataset (NaN for first row).
+ML features (all reset at the season boundary, so the offseason never counts
+as rest or as recent form):
+  - rest_days        : days since the previous game *this season* (NaN for a
+                       season's first game).
   - is_back_to_back  : rest_days <= 1
-  - rolling_pts_5    : trailing 5-game points avg, shifted to avoid leakage.
+  - rolling_pts_5    : trailing 5-game points avg within the season, shifted
+                       to avoid leakage (NaN for a season's first game).
   - opp_ga_per_game  : opponent team's season GA/game from team_stats. NaN
                        for international opponents (no NHL standings).
 
@@ -62,12 +65,28 @@ def compute_elimination(df: pd.DataFrame) -> pd.Series:
 def add_ml_features(df: pd.DataFrame, team_stats: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values("date").reset_index(drop=True)
 
-    df["rest_days"] = df["date"].diff().dt.days
+    # Both of these reset at the season boundary.
+    #
+    # Computing them across the whole career log let the offseason in: a
+    # season opener scored a "rest" of 107-150 days against an in-season
+    # median of 2, and five such rows out of 448 pushed the standard
+    # deviation from 1.27 to 11.69. Because the model standardizes its
+    # features, that made one unit of rest_days about 9x too wide and
+    # flattened the coefficient toward zero -- which the model page then
+    # reported as rest not mattering. The same gap let rolling_pts_5 carry
+    # form from June's playoffs into October's opener.
+    #
+    # A season's first game now has no prior game to measure from, so both
+    # come out NaN and _prepare drops the row. That is the honest answer:
+    # "days since the last game" is undefined for the first one.
+    df["rest_days"] = df.groupby("season")["date"].diff().dt.days
     df["is_back_to_back"] = (df["rest_days"] <= 1).fillna(False)
 
     # Trailing 5-game points avg shifted by 1 so the value reflects form
     # entering the game (no leakage from the current game).
-    df["rolling_pts_5"] = df["points"].rolling(window=5, min_periods=1).mean().shift(1)
+    df["rolling_pts_5"] = df.groupby("season")["points"].transform(
+        lambda s: s.rolling(window=5, min_periods=1).mean().shift(1)
+    )
 
     # Drop a stale opp_ga_per_game column if it exists (idempotent re-run).
     df = df.drop(columns=["opp_ga_per_game"], errors="ignore")
@@ -104,6 +123,19 @@ def apply_features(
         if not intl.empty:
             df = pd.concat([df, intl], ignore_index=True, sort=False)
 
+    # Dedup guards against a double concat, but a *genuine* collision -- an
+    # NHL game and an international game on the same date -- would silently
+    # delete the NHL row, since the international rows are concatenated last.
+    # That is a data error worth stopping for, not absorbing.
+    dupes = df[df.duplicated(subset=["date"], keep=False)]
+    if len(dupes):
+        conflicting = dupes.groupby("date")["game_context"].nunique()
+        conflicting = conflicting[conflicting > 1]
+        if len(conflicting):
+            raise ValueError(
+                "two different games share a date, so one would be dropped: "
+                + ", ".join(str(d) for d in conflicting.index)
+            )
     df = df.drop_duplicates(subset=["date"], keep="last").reset_index(drop=True)
     df["result"] = df["result"].astype(str).str.strip()
     df["date"] = pd.to_datetime(df["date"])

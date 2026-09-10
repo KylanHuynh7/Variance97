@@ -1,4 +1,5 @@
 import { Callout, DataTable, Figure, PageHeader, Rule } from "@/components/ui";
+import { fmtSigned } from "@/lib/charts";
 import { model } from "@/lib/data";
 import CoefficientFigure from "./CoefficientFigure";
 import GameDecomposition from "./GameDecomposition";
@@ -11,6 +12,11 @@ export default function FeatureContributionsPage() {
   const coefItems = [...model.coefficients]
     .sort((a, b) => a.coefficient - b.coefficient)
     .map((c) => ({ label: c.feature, value: c.coefficient }));
+
+  const finalsCoef =
+    model.coefficients.find(
+      (c) => c.feature === "game_context_stanley_cup_finals",
+    )?.coefficient ?? 0;
 
   const ranked = [...model.coefficients].sort(
     (a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient),
@@ -49,11 +55,24 @@ export default function FeatureContributionsPage() {
         Then real gameplay features were allowed to compete —{" "}
         <code>opp_ga_per_game</code>, <code>game_number</code>,{" "}
         <code>rolling_pts_5</code>, <code>rest_days</code>. The Finals
-        coefficient fell to roughly −0.07. The variance it had been holding
-        rerouted to late-series fatigue and opponent defensive quality. The
-        &ldquo;Finals effect&rdquo; was largely a late-series-against-good-defense
-        effect wearing a context label.
+        coefficient collapsed to {fmtSigned(finalsCoef, 3)} — near zero, and
+        pointing the <em>wrong way</em> for the narrative. The variance it had
+        been holding rerouted to late-series fatigue and opponent defensive
+        quality. The &ldquo;Finals effect&rdquo; was largely a
+        late-series-against-good-defense effect wearing a context label.
       </p>
+
+      <Callout kind="note" label="How to read a context coefficient">
+        <p>
+          Context is a categorical feature, so one level has to serve as the
+          baseline and gets no column of its own. That level is{" "}
+          <code>{model.reference_context}</code>. Every{" "}
+          <code>game_context_*</code> coefficient below is a difference{" "}
+          <em>from the regular season</em>, not an absolute rate — which is why{" "}
+          <code>game_context_first_round</code> being positive means he scores
+          more in the first round than in an average regular-season game.
+        </p>
+      </Callout>
 
       <Figure
         title="Standardized coefficients"
@@ -67,7 +86,10 @@ export default function FeatureContributionsPage() {
           <>
             Features are standardized, so coefficient magnitudes are directly
             comparable. <code>game_number</code> is the strongest single driver;{" "}
-            <code>game_context_stanley_cup_finals</code> is not.
+            <code>game_context_stanley_cup_finals</code> is not. Context
+            coefficients are differences from{" "}
+            <code>{model.reference_context}</code>, which carries no column of
+            its own.
           </>
         }
       >
