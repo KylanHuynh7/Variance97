@@ -93,6 +93,11 @@ export default function ThreeActsPage() {
   const oly = mcdavid.filter((g) =>
     g.game_context.toLowerCase().includes("olympic"),
   );
+  // Kept so a genuine pre-tournament exhibition, if one is ever entered,
+  // stays out of the competitive chart. The 2026 games vs CZH/SUI/FRA were
+  // group-stage games mislabelled as exhibitions -- they count toward the
+  // tournament record, so excluding them left this chart showing three games
+  // and four points directly beneath a sentence about thirteen.
   const olyCompetitive = oly.filter(
     (g) => !g.game_context.toLowerCase().includes("exhibition"),
   );
@@ -233,20 +238,20 @@ export default function ThreeActsPage() {
       </p>
 
       <Figure
-        title="Olympic competitive games"
-        subtitle="Group stage and knockouts. Exhibitions excluded from the chart, included in the table."
+        title="Every Olympic game"
+        subtitle="Group stage and knockouts, in tournament order."
         legend={RESULT_LEGEND}
         number={4}
         caption="The single scoreless column is the gold medal game."
       >
         <GameByGameFigure
           games={olyCompetitive}
-          ariaLabel="Bar chart of McDavid's points in each competitive Olympic game. Each column is labelled with the opponent, date, and result. Values are listed in the table below."
+          ariaLabel="Bar chart of McDavid's points in each Olympic game. Each column is labelled with the opponent, date, and result. Values are listed in the table below."
         />
       </Figure>
 
       <DataTable
-        caption="Every Olympic game, exhibitions included."
+        caption="Every Olympic game."
         columns={GAME_COLUMNS}
         rows={gameRows(oly)}
       />
