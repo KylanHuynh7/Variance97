@@ -52,18 +52,22 @@ st.subheader("The full list")
 
 with st.expander("**1. Sample size in high-stakes contexts**", expanded=False):
     st.markdown(
-        "Stanley Cup Finals (n=13), elimination losses (n=4), games vs Hellebuyck "
-        "(n=3), Olympic gold medal game (n=1). No Phase 2 test reaches significance "
+        "Stanley Cup Finals (n=13), elimination losses (n=5), games vs Hellebuyck "
+        "(n=3), Olympic gold medal game (n=1), the 2025-26 first round (n=6). "
+        "No Phase 2 test reaches significance "
         "at α=0.05 or Bonferroni-corrected α=0.0125. Cohen's d is reported for every "
         "test as the more honest quantification."
     )
 
-with st.expander("**2. Single peer in the comparison**"):
+with st.expander("**2. A small peer distribution (was: a single peer)**"):
     st.markdown(
-        "MacKinnon is a defensible choice (same era, similar usage, won the Cup in "
-        "2022) but a single peer is a single data point. Adding Matthews / Crosby / "
-        "Draisaitl would let us report McDavid's drop relative to the *distribution* "
-        "of peer drops, not a single comparison."
+        "Partly resolved. The peer group is now five elite centres of the same era "
+        "— MacKinnon, Draisaitl, Eichel, Matthews, Crosby — rather than MacKinnon "
+        "alone, and the generalization didn't flatter the original finding: "
+        "McDavid is mid-pack. Two of the three peers with Finals appearances fell "
+        "further; one didn't fall at all.\n\n"
+        "What remains is size. Three Finals peers on samples of 6 to 13 games is a "
+        "better baseline than one peer, and still not a tested effect."
     )
 
 with st.expander("**3. Points only, no on-ice or shift-level metrics**"):

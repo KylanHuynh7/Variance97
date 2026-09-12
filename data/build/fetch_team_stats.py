@@ -26,7 +26,11 @@ import urllib.request
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from seasons import season_label, season_start_years  # type: ignore
+from seasons import (  # type: ignore
+    current_season_start_year,
+    season_label,
+    season_start_years,
+)
 
 # A full league is 32 teams. Accept a little slack for expansion or for a
 # snapshot taken before every team has played, but not a half-empty result.
@@ -77,7 +81,7 @@ def _fetch_standings(date: str) -> dict:
         return json.load(r)
 
 
-def _rows_for_season(season: str, snapshot: str) -> list[dict]:
+def _rows_for_season(season: str, snapshot: str, is_current: bool = False) -> list[dict]:
     try:
         data = _fetch_standings(snapshot)
     except Exception as e:
@@ -100,6 +104,22 @@ def _rows_for_season(season: str, snapshot: str) -> list[dict]:
             "gf_per_game": round(gf / gp, 4),
         })
 
+    # A season that has not dropped a puck yet is not a failed fetch.
+    #
+    # season_start_years() rolls over in August, so from August until opening
+    # night in October the current season is in the list and legitimately has
+    # zero teams with games played. The guard below exists to catch a fetch
+    # that came back short -- an outage, a partial response -- and turning the
+    # pre-season window into a hard failure would stop the pipeline for two
+    # months a year, which is exactly the silent-breakage class the season
+    # module was written to end.
+    #
+    # Only the *current* season gets this pass, and only at exactly zero: a
+    # past season with no rows, or any season with some-but-not-enough, is
+    # still the failure it always was.
+    if is_current and not rows:
+        return []
+
     if len(rows) < MIN_TEAMS_PER_SEASON:
         raise StandingsUnavailable(
             f"{season} ({snapshot}): only {len(rows)} teams with games played, "
@@ -116,9 +136,13 @@ def build_team_stats(out_path: Path, today: date | None = None) -> int:
     depends on.
     """
     snapshots = season_snapshots(today)
+    current = season_label(current_season_start_year(today))
     rows: list[dict] = []
     for season, snapshot in snapshots.items():
-        season_rows = _rows_for_season(season, snapshot)
+        season_rows = _rows_for_season(season, snapshot, is_current=season == current)
+        if not season_rows:
+            print(f"  {season} ({snapshot}): not started yet, skipping")
+            continue
         rows.extend(season_rows)
         print(f"  {season} ({snapshot}): {len(season_rows)} teams")
 

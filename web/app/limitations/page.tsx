@@ -25,14 +25,22 @@ const FULL_LIST: { key: string; title: React.ReactNode; body: React.ReactNode }[
   },
   {
     key: "single-peer",
-    title: "A single peer in the comparison",
+    title: "A small peer distribution (was: a single peer)",
     body: (
-      <p>
-        MacKinnon is a defensible choice — same era, similar usage, won the Cup
-        in 2022 — but one peer is one data point. Adding Matthews, Crosby, or
-        Draisaitl would let us report McDavid&rsquo;s decline against the{" "}
-        <em>distribution</em> of peer declines rather than a single comparison.
-      </p>
+      <>
+        <p>
+          This one has been partly resolved. The peer group is now five elite
+          centres of the same era rather than MacKinnon alone, and the
+          generalization did not flatter the original finding: McDavid is
+          mid-pack. Two of the three peers with Finals appearances fell
+          further, and one did not fall at all.
+        </p>
+        <p>
+          What remains is size. Three Finals peers, on samples of 6 to 13
+          games, is a better baseline than one peer and still not a tested
+          effect. Matthews and Crosby reached no Final in the window.
+        </p>
+      </>
     ),
   },
   {
@@ -147,6 +155,14 @@ export default function LimitationsPage() {
           Any claim that <em>McDavid struggles in the Finals</em> is
           observationally identical to{" "}
           <em>McDavid struggles against the 2023&ndash;25 Panthers</em>.
+        </p>
+        <p>
+          One partial probe exists from outside McDavid&rsquo;s data. Jack
+          Eichel played a Final against the same Panthers core in 2023, Vegas
+          won it 4&ndash;1, and Eichel scored above his own regular-season rate
+          doing so. That disentangles nothing in Edmonton&rsquo;s rows, but it
+          does rule out the general form of the claim: the Panthers system does
+          not suppress every elite centre.
         </p>
         <p>
           Edmonton did not reach the Finals in 2025&ndash;26, so the

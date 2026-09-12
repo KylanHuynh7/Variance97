@@ -7,13 +7,15 @@ voice and keep wording in sync with the notebooks.
 HEADLINE = """
 **The popular narrative is simple: Connor McDavid can't win the big one. The data tells a more specific story.**
 
-McDavid won the 2025 Four Nations Face-Off (scoring the OT winner himself), set the Olympic scoring record at the 2026 Milan Cortina Games (13 points in 6 games), and his individual Stanley Cup Finals production drops about 0.28 points per game vs his regular season — but **Nathan MacKinnon's drop is twice as large (0.54), and he won the Cup in 2022.**
+McDavid won the 2025 Four Nations Face-Off (scoring the OT winner himself), set the Olympic scoring record at the 2026 Milan Cortina Games (13 points in 6 games), and his individual Stanley Cup Finals production drops about 0.28 points per game vs his regular season.
+
+That last number means nothing on its own — every elite forward scores less in a Final. Measured against five peers of the same era, **McDavid is mid-pack: of the three who reached a Final in this window, two fell further than he did and one didn't fall at all.**
 
 So the working thesis isn't *"McDavid underperforms in championship games"*. It's narrower: his teams keep losing deep playoff runs even when his individual production isn't unusually low for an elite forward.
 """
 
 PEER_FOOTER = """
-MacKinnon's regular-season-to-Stanley-Cup-Finals drop is roughly twice McDavid's, and he won the Cup. McDavid's individual Finals decline is *smaller* than a directly comparable peer's — it isn't outlier-bad. The popular "can't perform on the big stage" framing doesn't survive contact with peer data.
+McDavid's Finals decline sits in the middle of his peer group, not at the bottom of it. MacKinnon (who won the Cup) and Draisaitl (his own linemate, in the same two series) both fell further; Jack Eichel didn't fall at all. The popular "can't perform on the big stage" framing doesn't survive contact with peer data — and neither does the tidier claim, made by an earlier version of this project, that his decline is uniquely small. See the Peer Comparison page for the distribution.
 """
 
 CONFOUND_CALLOUT = """

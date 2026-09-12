@@ -35,6 +35,30 @@ def load_mackinnon() -> pd.DataFrame:
     return df
 
 
+# The peer group, mirroring data/build/fetch_player_log.PLAYERS. Spelled out
+# here rather than imported because that module lives outside the Streamlit
+# package and the app deliberately depends on nothing in data/build -- the two
+# only ever meet through the CSVs.
+PEER_KEYS = ["mackinnon", "draisaitl", "eichel", "matthews", "crosby"]
+PLAYER_NAMES = {
+    "mcdavid": "McDavid",
+    "mackinnon": "MacKinnon",
+    "draisaitl": "Draisaitl",
+    "eichel": "Eichel",
+    "matthews": "Matthews",
+    "crosby": "Crosby",
+}
+
+
+@st.cache_data(ttl=60)
+def load_player(key: str) -> pd.DataFrame:
+    """Clean log for any player in the registry, by key."""
+    df = pd.read_csv(DATA_DIR / f"{key}_game_log_clean.csv")
+    df["date"] = pd.to_datetime(df["date"])
+    df["result"] = df["result"].astype(str).str.strip()
+    return df
+
+
 @st.cache_data(ttl=60)
 def load_team_stats() -> pd.DataFrame:
     return pd.read_csv(DATA_DIR / "opponent_team_stats.csv")

@@ -8,7 +8,7 @@ The popular narrative is that Connor McDavid can't win the big one. The data tel
 
 - McDavid **won** the 2025 Four Nations Face-Off, scoring the OT winner himself in the final.
 - McDavid **set the Olympic scoring record** with 13 points in 6 games at the 2026 Milan Cortina Games.
-- McDavid's individual Stanley Cup Finals production drops about **0.28 pts/game** vs his regular season — but **Nathan MacKinnon's drops twice as much (0.54 pts/game)** and MacKinnon won the Cup in 2022.
+- McDavid's individual Stanley Cup Finals production drops about **0.28 pts/game** vs his regular season — which means nothing until it is compared. Measured against five elite centres of the same era, **McDavid is mid-pack**: of the three who reached a Final in this window, MacKinnon (−0.54, and he won the Cup) and Draisaitl (−0.61) fell further, while Jack Eichel (+0.00) did not fall at all.
 
 So the working thesis isn't "McDavid underperforms in championship-level games." It's narrower: **his teams keep losing deep playoff runs even when his individual production isn't unusually low for an elite forward.** The project tests where the predictive signal actually lives, against three hypotheses:
 
@@ -31,15 +31,26 @@ Three acts (Stanley Cup Playoffs / Four Nations / Olympics) plus a synthesis sec
 Four formal tests with **effect sizes (Cohen's d) alongside p-values** and **Bonferroni correction (k=4 → α=0.0125)**. Includes a peer-comparison test (McDavid SCF vs MacKinnon SCF) that the original version was missing. None of the tests reach significance — the dataset is structurally underpowered (n=3 to n=13 for the playoff/championship contexts) — and we no longer use "trending toward significance" framing. The peer-comparison non-result is itself informative: McDavid's SCF output is *higher* than MacKinnon's, directly contradicting the popular thesis.
 
 ### Phase 3 — Feature Attribution (`03_ml_model.ipynb`)
-Reframed from "logistic regression predicting pointless games" to **Ridge regression on points/game with real gameplay features**: `opp_ga_per_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`. Scoped to NHL games only. The result that matters: when `game_context_stanley_cup_finals` has to compete against gameplay features instead of standing alone, **its coefficient drops from +0.67 (original) to +0.037** — near zero, and pointing the opposite way to the narrative. The variance the original model attributed to "Stanley Cup Finals" reroutes to `game_number` (late-series fatigue) and `opp_ga_per_game` (opponent quality).
+Reframed from "logistic regression predicting pointless games" to **Ridge regression on points/game with real gameplay features**: `opp_ga_per_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`. Scoped to NHL games only. The result that matters: when `game_context_stanley_cup_finals` has to compete against gameplay features instead of standing alone, **its coefficient drops from +0.67 (original) to +0.051** — near zero, and pointing the opposite way to the narrative. The variance the original model attributed to "Stanley Cup Finals" reroutes to `game_number` (late-series fatigue) and `opp_ga_per_game` (opponent quality).
+
+The model trains on 463 games. It used to train on 444: nineteen games against Vegas were being silently dropped, because McDavid's log — the one file predating the API pipeline — spelled the opponent `VEG` while the standings table says `VGK`, so those rows joined no opponent strength and `_prepare` discarded them. That log also carried thirteen games with impossible scores (a 2–2 win). Both were repaired by re-fetching it from the API; see Phase 4.
 
 Context is categorical, so one level is the baseline and carries no column: that level is `regular_season`, pinned explicitly in `_prepare` rather than left to `get_dummies` to pick. Every `game_context_*` coefficient is therefore a difference from an average regular-season game. `rest_days` and `rolling_pts_5` reset at each season boundary, so a 150-day offseason is never counted as rest or as recent form. The "Stanley Cup Finals effect" was largely a late-series + tough-defense effect masquerading as a context label.
 
 ### Phase 4 — NHL API Pipeline (`04_nhl_api_pipeline.ipynb`)
-Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of McDavid + MacKinnon `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` are populated), standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
+Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of every registry player's `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` are populated), standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
+
+```bash
+python3 data/build/update_all.py                  # incremental, every player
+python3 data/build/update_all.py --rebuild mcdavid  # re-fetch one player in full
+```
+
+`--rebuild` exists because the incremental path is cursor-based: it only ever looks at dates newer than the newest it already has, so a row written wrong stays wrong forever. That is not hypothetical — it is how McDavid's `VEG`/`VGK` and impossible-score rows survived four phases of work. Passing no names rebuilds everyone.
+
+Which side of a boxscore is "the player's team" is decided by elimination against the opponent in the row, not by a per-player team abbreviation, so a mid-season trade needs no special handling.
 
 ### Phase 5 — Interactive Dashboard (`web/`, with `app/` as fallback)
-Six-page dashboard built around the reframed thesis, not a point-prediction toy. It opens with the headline (Four Nations win, Olympic record, McDavid's SCF drop is smaller than MacKinnon's). Pages: **Three Acts** (Playoffs / Four Nations / Olympics, interactive), **Peer Comparison** (the strongest finding, McDavid vs MacKinnon by context), **Feature Contributions** (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), **Limitations** (Florida confound, Hellebuyck n=3), and **Pipeline Status** (latest game date, row count, CSV mtime).
+Six-page dashboard built around the reframed thesis, not a point-prediction toy. It opens with the headline (Four Nations win, Olympic record, and McDavid mid-pack in the peer distribution). Pages: **Three Acts** (Playoffs / Four Nations / Olympics, interactive), **Peer Comparison** (the strongest finding: where McDavid's Finals decline sits in a five-peer distribution, plus a head-to-head against any one of them), **Feature Contributions** (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), **Limitations** (Florida confound, Hellebuyck n=3), and **Pipeline Status** (latest game date, row count, CSV mtime).
 
 The dashboard exists in two forms, both driven by the same clean CSVs. No API calls happen from either — Phase 4 owns all external I/O.
 
@@ -53,11 +64,23 @@ The dataset is built and refreshed by the Phase 4 pipeline (`data/build/`). Sour
 | File | Source | Description |
 | --- | --- | --- |
 | `data/mcdavid_nhl_log.csv` | NHL API | NHL-only McDavid game log. Rebuilt incrementally by the pipeline. |
-| `data/mackinnon_nhl_log.csv` | NHL API | NHL-only MacKinnon game log (peer baseline). Rebuilt incrementally by the pipeline. |
+| `data/<peer>_nhl_log.csv` | NHL API | One per peer — `mackinnon`, `draisaitl`, `eichel`, `matthews`, `crosby`. Same pipeline, same schema. |
 | `data/international_games.csv` | Manual entry | Four Nations / Olympics rows — the NHL API doesn't cover these. |
 | `data/opponent_team_stats.csv` | NHL API standings | Per-season GA/game for every team. Refreshed each pipeline run. |
 | `data/mcdavid_game_log_clean.csv` | Pipeline output | Merged + featured (NHL + international). Consumed by Phases 1–3. |
-| `data/mackinnon_game_log_clean.csv` | Pipeline output | Merged + featured (NHL only). Consumed by Phases 1–2. |
+| `data/<peer>_game_log_clean.csv` | Pipeline output | Featured (NHL only), one per peer. Consumed by the peer comparison. |
+
+### The peer group
+
+The comparison rests on five elite centres of the same era, all pulled through the same pipeline. They are declared in `data/build/fetch_player_log.PLAYERS`, and adding another is a registry entry and nothing else — the orchestrator, the exporter and the Pipeline Status page all derive their lists from it.
+
+| Player | Finals in window | Why they are in the group |
+| --- | --- | --- |
+| Nathan MacKinnon | 2022 (won) | The original peer. Same era, similar usage. |
+| Leon Draisaitl | 2024, 2025 | A within-team control, not an independent peer: the same two series, the same opponent, the same supporting cast. |
+| Jack Eichel | 2023 (won), 2026 | The only peer with two Finals against different opponents — and the only one to have faced the Panthers team McDavid is confounded with. |
+| Auston Matthews | none | No Final in the window; contributes to the earlier rounds only. |
+| Sidney Crosby | none | The thinnest record here, kept deliberately — dropping a peer for a short playoff record after seeing it is how a comparison group gets curated. |
 
 ### `is_elimination_game` rule
 A game is an elimination game if a single loss ends the run:
@@ -139,18 +162,17 @@ Both read the same clean CSVs from `data/`. Phase 4's pipeline keeps those fresh
 ```
 data/
     build/
-        fetch_player_log.py        # generic NHL gameLog fetcher
+        fetch_player_log.py        # gameLog fetcher + the player registry
         fetch_boxscores.py         # adds result/team_score/opp_score
         fetch_team_stats.py        # NHL standings -> team GA/game
         apply_features.py          # is_elimination_game + ML features
+        seasons.py                 # season ids/labels, derived from the clock
         update_all.py              # pipeline orchestrator
         export_web.py              # -> web/public/data.json (build-time bundle)
-    mcdavid_nhl_log.csv            # API source
-    mackinnon_nhl_log.csv          # API source
-    international_games.csv        # manual entry
+    <player>_nhl_log.csv           # API source, one per registry player
+    <player>_game_log_clean.csv    # pipeline output (analysis input)
+    international_games.csv        # manual entry (McDavid only)
     opponent_team_stats.csv        # team GA/game by season
-    mcdavid_game_log_clean.csv     # pipeline output (analysis input)
-    mackinnon_game_log_clean.csv   # pipeline output (analysis input)
 notebooks/
     01_data_loading_and_exploration.ipynb
     02_statistical_validation.ipynb
@@ -177,4 +199,4 @@ README.md
 
 ## Honest summary
 
-The project's most interesting finding is the one that contradicts its own original framing: **McDavid's individual Stanley Cup Finals production is not unusually low for an elite forward** — MacKinnon, who actually won, dropped twice as much. Where the predictive signal *does* live, once real gameplay features are introduced, is **late-in-series fatigue (`game_number`) and opponent defensive quality (`opp_ga_per_game`)** — not the "championship" label. That is the narrower, defensible claim Phase 4's pipeline keeps fresh and Phase 5's dashboard puts in front of a reader inside 30 seconds.
+The project's most interesting finding is the one that contradicts its own original framing: **McDavid's individual Stanley Cup Finals production is not unusually low for an elite forward** — measured against a five-peer group he lands mid-pack, with MacKinnon (who won) and his own linemate Draisaitl both falling further. The peer expansion also cost the project its tidier claim: "his decline is half a comparable peer's" was an artifact of comparing him to one peer. Where the predictive signal *does* live, once real gameplay features are introduced, is **late-in-series fatigue (`game_number`) and opponent defensive quality (`opp_ga_per_game`)** — not the "championship" label. That is the narrower, defensible claim Phase 4's pipeline keeps fresh and Phase 5's dashboard puts in front of a reader inside 30 seconds.
