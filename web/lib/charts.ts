@@ -111,10 +111,17 @@ export function baseLayout(t: ChartTheme, width = 640) {
 export const fmt = (v: number | null, digits = 2) =>
   v === null || Number.isNaN(v) ? "—" : v.toFixed(digits);
 
-export const fmtSigned = (v: number | null, digits = 2) =>
-  v === null || Number.isNaN(v)
-    ? "—"
-    : `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(digits)}`;
+/**
+ * A signed value. A value that rounds to zero carries no sign — otherwise a
+ * difference of -0.001 prints as "−0.00", which reads as a decline that
+ * isn't there.
+ */
+export const fmtSigned = (v: number | null, digits = 2) => {
+  if (v === null || Number.isNaN(v)) return "—";
+  const magnitude = Math.abs(v).toFixed(digits);
+  if (Number(magnitude) === 0) return magnitude;
+  return `${v >= 0 ? "+" : "−"}${magnitude}`;
+};
 
 /* ------------------------------------------------------------------ */
 /* Peer comparison — two categorical series                            */

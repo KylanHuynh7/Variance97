@@ -16,6 +16,12 @@ So the working thesis isn't "McDavid underperforms in championship-level games."
 2. **H2 — Team Construction:** Edmonton's supporting cast fails around him.
 3. **H3 — Matchup-Specific:** elite goaltender + elite defensive system specifically suppresses him (Bobrovsky/FLA, Hellebuyck/USA).
 
+### The 2025–26 first round, stated up front
+
+The newest series in the dataset is the one that fits the reframing worst, so it is named here rather than left to average out. Edmonton lost the 2025–26 first round to Anaheim 2–4, and McDavid scored **1.00 pts/game against a 1.67 regular-season rate** at **−8** — a drop of 0.67, larger than his Stanley Cup Finals drop and larger than MacKinnon's. Of the 14 playoff series in the window it is his lowest-scoring and his worst by plus/minus.
+
+It is six games against one opponent, so it does not overturn a comparison built on 13 Finals games; and unlike the Finals rows it carries no Florida confound. It is a genuine counterexample at n=6, and the site says so on the home page and in Act I rather than burying it in a pooled first-round mean.
+
 ## What each phase actually does
 
 ### Phase 1 — Exploratory Data Analysis (`01_data_loading_and_exploration.ipynb`)
@@ -25,7 +31,7 @@ Three acts (Stanley Cup Playoffs / Four Nations / Olympics) plus a synthesis sec
 Four formal tests with **effect sizes (Cohen's d) alongside p-values** and **Bonferroni correction (k=4 → α=0.0125)**. Includes a peer-comparison test (McDavid SCF vs MacKinnon SCF) that the original version was missing. None of the tests reach significance — the dataset is structurally underpowered (n=3 to n=13 for the playoff/championship contexts) — and we no longer use "trending toward significance" framing. The peer-comparison non-result is itself informative: McDavid's SCF output is *higher* than MacKinnon's, directly contradicting the popular thesis.
 
 ### Phase 3 — Feature Attribution (`03_ml_model.ipynb`)
-Reframed from "logistic regression predicting pointless games" to **Ridge regression on points/game with real gameplay features**: `opp_ga_per_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`. Scoped to NHL games only. The result that matters: when `game_context_stanley_cup_finals` has to compete against gameplay features instead of standing alone, **its coefficient drops from +0.67 (original) to +0.04** — near zero, and pointing the opposite way to the narrative. The variance the original model attributed to "Stanley Cup Finals" reroutes to `game_number` (late-series fatigue) and `opp_ga_per_game` (opponent quality).
+Reframed from "logistic regression predicting pointless games" to **Ridge regression on points/game with real gameplay features**: `opp_ga_per_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`. Scoped to NHL games only. The result that matters: when `game_context_stanley_cup_finals` has to compete against gameplay features instead of standing alone, **its coefficient drops from +0.67 (original) to +0.037** — near zero, and pointing the opposite way to the narrative. The variance the original model attributed to "Stanley Cup Finals" reroutes to `game_number` (late-series fatigue) and `opp_ga_per_game` (opponent quality).
 
 Context is categorical, so one level is the baseline and carries no column: that level is `regular_season`, pinned explicitly in `_prepare` rather than left to `get_dummies` to pick. Every `game_context_*` coefficient is therefore a difference from an average regular-season game. `rest_days` and `rolling_pts_5` reset at each season boundary, so a 150-day offseason is never counted as rest or as recent form. The "Stanley Cup Finals effect" was largely a late-series + tough-defense effect masquerading as a context label.
 

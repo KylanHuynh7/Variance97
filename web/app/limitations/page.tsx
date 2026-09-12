@@ -7,12 +7,20 @@ const FULL_LIST: { key: string; title: React.ReactNode; body: React.ReactNode }[
     key: "sample-size",
     title: "Sample size in high-stakes contexts",
     body: (
-      <p>
-        Stanley Cup Finals n=13, elimination losses n=4, games versus Hellebuyck
-        n=3, Olympic gold medal game n=1. No Phase 2 test reaches significance at
-        α=0.05, let alone the Bonferroni-corrected α=0.0125. Cohen&rsquo;s d is
-        reported for every test as the more honest quantification.
-      </p>
+      <>
+        <p>
+          Stanley Cup Finals n=13, elimination losses n=4, games versus
+          Hellebuyck n=3, Olympic gold medal game n=1, the 2025&ndash;26 first
+          round n=6. No Phase 2 test reaches significance at α=0.05, let alone
+          the Bonferroni-corrected α=0.0125. Cohen&rsquo;s d is reported for
+          every test as the more honest quantification.
+        </p>
+        <p>
+          This applies in both directions. The caveat that keeps the reframing
+          from being over-read covers the 2025&ndash;26 series that runs against
+          it just as fully &mdash; neither is a tested effect.
+        </p>
+      </>
     ),
   },
   {
@@ -139,6 +147,13 @@ export default function LimitationsPage() {
           Any claim that <em>McDavid struggles in the Finals</em> is
           observationally identical to{" "}
           <em>McDavid struggles against the 2023&ndash;25 Panthers</em>.
+        </p>
+        <p>
+          Edmonton did not reach the Finals in 2025&ndash;26, so the
+          entanglement is unchanged. That season&rsquo;s first-round exit to
+          Anaheim is the first large production drop in the window that Florida
+          cannot account for &mdash; but it sits in a different context at n=6,
+          so it disentangles nothing.
         </p>
       </Callout>
 
