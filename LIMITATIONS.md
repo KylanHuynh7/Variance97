@@ -8,7 +8,7 @@ The project takes the position that surfacing these limitations is more analytic
 
 ## 1. Sample size in high-stakes contexts
 
-**The limitation.** The contexts at the heart of the project — Stanley Cup Finals (n=13), elimination losses (n=4), games vs Hellebuyck (n=3), Olympic gold medal game (n=1), the 2025–26 first round (n=6) — have sample sizes that are structurally too small for conventional statistical inference.
+**The limitation.** The contexts at the heart of the project — Stanley Cup Finals (n=13), elimination losses (n=5), games vs Hellebuyck (n=3), Olympic gold medal game (n=1), the 2025–26 first round (n=6) — have sample sizes that are structurally too small for conventional statistical inference.
 
 This cuts both ways, and the project applies it in both directions. The small-sample caveat that protects the reframing from being over-read also applies to the 2025–26 series that runs against it: neither is a tested effect.
 

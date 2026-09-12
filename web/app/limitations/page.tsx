@@ -9,7 +9,7 @@ const FULL_LIST: { key: string; title: React.ReactNode; body: React.ReactNode }[
     body: (
       <>
         <p>
-          Stanley Cup Finals n=13, elimination losses n=4, games versus
+          Stanley Cup Finals n=13, elimination losses n=5, games versus
           Hellebuyck n=3, Olympic gold medal game n=1, the 2025&ndash;26 first
           round n=6. No Phase 2 test reaches significance at α=0.05, let alone
           the Bonferroni-corrected α=0.0125. Cohen&rsquo;s d is reported for
