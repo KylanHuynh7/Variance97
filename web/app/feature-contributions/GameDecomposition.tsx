@@ -7,7 +7,9 @@ import { ChartTheme, signedBars, signedLayout } from "@/lib/charts";
 import { Model, contextLabel, perGameContributions } from "@/lib/data";
 
 export default function GameDecomposition({ model }: { model: Model }) {
-  const [idx, setIdx] = useState(model.games.length - 1); // most recent game
+  // Math.max keeps the index valid if the model ever exports zero games;
+  // -1 would index past the end and throw while reading row.x.
+  const [idx, setIdx] = useState(Math.max(0, model.games.length - 1));
 
   const labels = useMemo(
     () =>

@@ -133,7 +133,9 @@ export function DataTable({
   caption?: React.ReactNode;
 }) {
   return (
-    <div className="table-wrap">
+    // tabIndex makes the horizontal scroll reachable by keyboard when the
+    // table is wider than its container.
+    <div className="table-wrap" tabIndex={0}>
       <table>
         {caption ? <caption>{caption}</caption> : null}
         <thead>

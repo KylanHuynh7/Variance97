@@ -31,6 +31,19 @@ def _prepare(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
     df["is_elimination_game"] = df["is_elimination_game"].astype(int)
     df["is_back_to_back"] = df["is_back_to_back"].astype(int)
 
+    # Pin the dummy encoding to NHL_CONTEXTS so the reference level is
+    # regular_season, deliberately and permanently.
+    #
+    # Plain get_dummies(drop_first=True) drops whichever category sorts first
+    # among those *present in the data*, which was conf_finals. Every context
+    # coefficient was therefore measured against the Conference Finals while
+    # the page read as though it were measured against the regular season --
+    # and had a future refresh ever dropped the conf_finals rows, the baseline
+    # would have silently moved again. Declaring the categories fixes both:
+    # the columns no longer depend on which contexts happen to be present.
+    df[CATEGORICAL_FEATURES[0]] = pd.Categorical(
+        df[CATEGORICAL_FEATURES[0]], categories=NHL_CONTEXTS
+    )
     X = pd.concat([
         df[NUMERIC_FEATURES].astype(float),
         pd.get_dummies(df[CATEGORICAL_FEATURES], drop_first=True).astype(float),

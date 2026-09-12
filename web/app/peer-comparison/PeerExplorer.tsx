@@ -160,7 +160,11 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
                 />
                 <Stat
                   label="Ratio"
-                  value={`${Math.abs(macDrop / mcdDrop).toFixed(1)}×`}
+                  value={
+                    mcdDrop === 0
+                      ? "—"
+                      : `${Math.abs(macDrop / mcdDrop).toFixed(1)}×`
+                  }
                   note="MacKinnon's decline relative to McDavid's."
                 />
               </StatRow>
