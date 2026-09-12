@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import Link from "next/link";
 import Tabs from "@/components/Tabs";
 import {
   Callout,
@@ -75,6 +76,39 @@ export default function ThreeActsPage() {
     avg: mean(playoffs.filter((g) => g.game_number === n).map((g) => g.points)),
     n: playoffs.filter((g) => g.game_number === n).length,
   }));
+
+  // First round, split by season rather than pooled. Pooling is what hides
+  // 2025-26: five series average out to a rate that looks like the regular
+  // season, and the one series that doesn't disappears into the mean.
+  const firstRoundSeasons = Array.from(
+    new Set(
+      mcdavid
+        .filter((g) => g.game_context === "first_round")
+        .map((g) => g.season),
+    ),
+  ).sort();
+  const firstRoundBySeason = firstRoundSeasons.map((season) => {
+    const rows = mcdavid.filter(
+      (g) => g.game_context === "first_round" && g.season === season,
+    );
+    return {
+      season,
+      opponent: rows[0]?.opponent ?? "—",
+      n: rows.length,
+      ppg: mean(rows.map((g) => g.points)),
+      pm: rows.reduce((s, g) => s + g.plus_minus, 0),
+      record: `${rows.filter((g) => g.result === "W").length}–${
+        rows.filter((g) => g.result === "L").length
+      }`,
+    };
+  });
+  const latestFirstRound = firstRoundBySeason[firstRoundBySeason.length - 1];
+
+  // Every playoff series in the window, so the callout below can say where
+  // the newest one ranks rather than asserting it is unique.
+  const playoffSeriesCount = new Set(
+    playoffs.map((g) => `${g.season}|${g.game_context}`),
+  ).size;
 
   const nhlOnly = mcdavid.filter((g) =>
     NHL_CONTEXT_ORDER.includes(g.game_context),
@@ -187,6 +221,55 @@ export default function ThreeActsPage() {
         Phase 2 Test 2 picked this up as a large effect size on the losses — on
         a sample of {elimLosses.length}, which is too small to test.
       </p>
+
+      <h3>The {latestFirstRound?.season} first round</h3>
+      <p>
+        Every number above pools the first round across seasons, and pooling is
+        what hides the newest series. Split by season, one of them does not
+        look like the others.
+      </p>
+
+      <DataTable
+        caption="First-round series, by season. One row per series."
+        columns={[
+          { key: "season", header: "Season" },
+          { key: "opponent", header: "Opponent" },
+          { key: "record", header: "W–L" },
+          { key: "ppg", header: "Pts/game", numeric: true },
+          { key: "vs", header: "vs regular season", numeric: true },
+          { key: "pm", header: "+/−", numeric: true },
+        ]}
+        rows={firstRoundBySeason.map((r) => ({
+          season: r.season,
+          opponent: r.opponent,
+          record: r.record,
+          ppg: fmt(r.ppg),
+          vs: fmtSigned(r.ppg - rsPts),
+          pm: fmtSigned(r.pm, 0),
+        }))}
+      />
+
+      <Callout kind="warn" label="The season that cuts the other way">
+        <p>
+          In {latestFirstRound?.season} Edmonton lost the first round to{" "}
+          {latestFirstRound?.opponent} {latestFirstRound?.record}, and
+          McDavid&rsquo;s production went with them:{" "}
+          {fmt(latestFirstRound?.ppg ?? NaN)} points per game against a{" "}
+          {fmt(rsPts)} regular-season rate, at{" "}
+          {fmtSigned(latestFirstRound?.pm ?? NaN, 0)}. That drop is larger than
+          his Stanley Cup Finals drop and larger than MacKinnon&rsquo;s — the
+          comparison the <Link href="/">headline</Link> rests on.
+        </p>
+        <p>
+          It is one series of {latestFirstRound?.n} games against a single
+          opponent, so it settles nothing on its own. It is worth naming
+          anyway: of the {playoffSeriesCount} playoff series in this window it
+          is his lowest-scoring and his worst by plus/minus. Stated plainly
+          rather than averaged away — the reframing this project argues for is
+          drawn from the Finals, and the newest evidence in the dataset
+          doesn&rsquo;t fit it.
+        </p>
+      </Callout>
     </>
   );
 

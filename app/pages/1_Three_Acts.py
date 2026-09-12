@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pandas as pd
 import streamlit as st
 
-from components import charts, data_loader
+from components import charts, data_loader, narrative
 
 st.set_page_config(page_title="Three Acts · Variance97", page_icon="🏒", layout="wide")
 
@@ -84,6 +84,31 @@ with tab_nhl:
         "than non-elimination games — driven by the wins. The split is what "
         "Phase 2 Test 2 picked up: large effect size on losses, small sample."
     )
+
+    # First round, by season. Every number above pools it, and pooling is what
+    # hides 2025-26: four series at or above his regular-season rate average
+    # out the one series that is well below it.
+    st.markdown("##### First-round series, by season")
+    first_round = mcdavid[mcdavid["game_context"] == "first_round"]
+    by_season = (first_round
+                 .groupby("season")
+                 .agg(opponent=("opponent", "first"),
+                      games=("points", "size"),
+                      pts_per_game=("points", "mean"),
+                      plus_minus=("plus_minus", "sum"),
+                      wins=("result", lambda s: (s == "W").sum()),
+                      losses=("result", lambda s: (s == "L").sum()))
+                 .reset_index())
+    by_season["record"] = (by_season["wins"].astype(str) + "–"
+                           + by_season["losses"].astype(str))
+    by_season["vs_regular_season"] = (by_season["pts_per_game"] - rs_pts).round(2)
+    st.dataframe(
+        by_season[["season", "opponent", "record", "games", "pts_per_game",
+                   "vs_regular_season", "plus_minus"]].round(2),
+        width="stretch",
+        hide_index=True,
+    )
+    st.warning(narrative.LATEST_EXIT)
 
 
 # ============================== Act 2 ==============================

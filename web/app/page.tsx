@@ -10,6 +10,7 @@ import {
   countByContext,
   mackinnon,
   mcdavid,
+  mean,
   meanByContext,
 } from "@/lib/data";
 
@@ -26,6 +27,18 @@ export default function HomePage() {
   const macDrop =
     contextMean(mackinnon, "stanley_cup_finals") -
     contextMean(mackinnon, "regular_season");
+
+  // The most recent playoff series, called out by name rather than folded
+  // into the first-round average. It is the one series in the window that
+  // runs against the argument this page makes, so it is stated here.
+  const latestSeason = mcdavid
+    .map((g) => g.season)
+    .reduce((a, b) => (b > a ? b : a), "");
+  const latestExit = mcdavid.filter(
+    (g) => g.season === latestSeason && g.game_context === "first_round",
+  );
+  const latestExitPpg = mean(latestExit.map((g) => g.points));
+  const latestExitDrop = latestExitPpg - contextMean(mcdavid, "regular_season");
 
   return (
     <>
@@ -111,6 +124,18 @@ export default function HomePage() {
         forward. Where the signal actually lives — late-series fatigue and
         opponent defensive quality — is what the rest of this investigation
         tests.
+      </p>
+
+      <p>
+        One series complicates that, and it is the most recent one. Edmonton
+        lost the {latestSeason} first round to {latestExit[0]?.opponent} in{" "}
+        {latestExit.length} games, and McDavid scored at {fmt(latestExitPpg)} points
+        per game — a drop of {fmt(Math.abs(latestExitDrop))}, larger than his
+        Finals drop and larger than MacKinnon&rsquo;s. It is one short series
+        against a single opponent, so it does not overturn the comparison
+        above. It is worth naming anyway: it is the newest evidence in the
+        dataset, and his lowest-scoring playoff series in it.{" "}
+        <Link href="/three-acts">Act I</Link> breaks it out by season.
       </p>
 
       <DataTable

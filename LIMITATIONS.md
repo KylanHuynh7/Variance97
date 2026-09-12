@@ -8,7 +8,9 @@ The project takes the position that surfacing these limitations is more analytic
 
 ## 1. Sample size in high-stakes contexts
 
-**The limitation.** The contexts at the heart of the project — Stanley Cup Finals (n=13), elimination losses (n=4), games vs Hellebuyck (n=3), Olympic gold medal game (n=1) — have sample sizes that are structurally too small for conventional statistical inference.
+**The limitation.** The contexts at the heart of the project — Stanley Cup Finals (n=13), elimination losses (n=5), games vs Hellebuyck (n=3), Olympic gold medal game (n=1), the 2025–26 first round (n=6) — have sample sizes that are structurally too small for conventional statistical inference.
+
+This cuts both ways, and the project applies it in both directions. The small-sample caveat that protects the reframing from being over-read also applies to the 2025–26 series that runs against it: neither is a tested effect.
 
 **Impact.** No test in Phase 2 reaches significance at either α=0.05 or the Bonferroni-corrected α=0.0125. The project compensates by reporting Cohen's d (effect size) alongside every p-value, but effect-size estimates from n=3 are themselves unstable.
 
@@ -23,6 +25,8 @@ The project takes the position that surfacing these limitations is more analytic
 **Impact.** Any claim that "McDavid struggles in the Finals" is observationally identical to "McDavid struggles vs the 2023–25 Panthers." Phase 3's ML model partially addresses this by introducing `opp_ga_per_game` as a generic opponent-strength feature, but the underlying confound in the raw data cannot be eliminated.
 
 **What would resolve it.** Edmonton reaching the Finals against a non-Florida opponent, or expanding the dataset to include other elite forwards' Finals appearances against multiple opponents.
+
+**Status note (2025–26).** Edmonton did not reach the Finals in 2025–26 — they lost the first round to Anaheim — so the confound is unchanged. That series is, however, the first evidence in the window of a large McDavid production drop that Florida cannot be blamed for: 1.00 pts/game against a 1.67 regular-season rate, a drop of 0.67, at −8. It sits in a different context (first round, not Finals) at n=6, so it does not disentangle anything. It does mean the project's reframing now has a visible counterexample, and Limitation #1 applies to it in full.
 
 ---
 
@@ -92,7 +96,7 @@ The project takes the position that surfacing these limitations is more analytic
 
 **The limitation.** The `rest_days` feature is the gap between consecutive games *in the dataset*, not the actual gap on Edmonton's calendar. If McDavid sat out a game (rest, injury, healthy scratch), the feature treats the next game as if no rest occurred between his appearances.
 
-**Impact.** Small. McDavid rarely sits, and the model's `rest_days` coefficient is near zero (−0.008) anyway. But the feature is technically a misstatement when McDavid misses a team game.
+**Impact.** Small, but larger than it used to look. This entry previously cited a `rest_days` coefficient of −0.008 and called it negligible. That number was an artifact of the offseason being counted as rest, which inflated the feature's standard deviation to 11.7 and flattened the coefficient toward zero. With the feature reset at each season boundary the coefficient is **−0.052** — still small, no longer negligible, and now worth measuring correctly. McDavid rarely sits, so the misstatement is rare; it is a misstatement all the same.
 
 **What would resolve it.** Pulling Edmonton's full team schedule and computing rest from team-game-to-team-game, then joining to McDavid's game log. Trivial via the NHL API.
 

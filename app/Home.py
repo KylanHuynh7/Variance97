@@ -70,6 +70,8 @@ col3.metric(
 
 st.markdown(narrative.PEER_FOOTER)
 
+st.warning(narrative.LATEST_EXIT)
+
 st.divider()
 
 # ---- where to go next ----
