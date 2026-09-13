@@ -30,7 +30,7 @@ The Limitations page has the full list.
 FEATURE_PAGE_DISCLAIMER = """
 This model performs at baseline (R² near zero on held-out games). It is **not a deployable predictor.** Use this page to understand which features carry signed weight in the regression — *not* to predict tonight's game.
 
-The interesting result is **what dropped, not what kept rank.** When the original notebook's logistic regression had only `game_context` to work with, "Stanley Cup Finals" dominated with coefficient +0.67. Once real gameplay features compete (`opp_ga_per_game`, `game_number`, `rolling_pts_5`), the SCF coefficient collapses to **+0.037** — measured against an average regular-season game, which is the pinned baseline category. The variance reroutes to late-series fatigue and opponent defensive quality.
+The interesting result is **what dropped, not what kept rank.** When the original notebook's logistic regression had only `game_context` to work with, "Stanley Cup Finals" dominated with coefficient +0.67. Once real gameplay features compete (`opp_ga_per_game`, `game_number`, `rolling_pts_5`), the SCF coefficient collapses to **+0.051** — measured against an average regular-season game, which is the pinned baseline category. The variance reroutes to late-series fatigue and opponent defensive quality.
 """
 
 
