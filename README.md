@@ -1,6 +1,11 @@
 # Variance97
 
-Data science investigation of Connor McDavid's performance in high-stakes hockey across the NHL Stanley Cup Playoffs (2021–22 through 2024–25), the 2025 Four Nations Face-Off, and the 2026 Winter Olympics.
+Data science investigation of Connor McDavid's performance in high-stakes hockey across the NHL Stanley Cup Playoffs (2021–22 through 2025–26), the 2025 Four Nations Face-Off, and the 2026 Winter Olympics.
+
+> **Picking this up after a break?** [`TRACING.md`](TRACING.md) is the continuity
+> document: current state, what changed recently and why, the bugs that are worth
+> knowing about as classes rather than incidents, and what to do next. This file
+> explains what the project is; that one explains where it stands.
 
 ## The question, narrowed
 
@@ -191,6 +196,7 @@ app/                               # Streamlit fallback dashboard
 scripts/
     run_update.sh                  # CLI wrapper for cron / CI
 requirements.txt
+TRACING.md                         # continuity / session handoff
 LIMITATIONS.md
 PHASE4_PLAN.md
 PHASE5_PLAN.md
