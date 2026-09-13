@@ -8,8 +8,13 @@
  *
  * Palette provenance — validated with the data-viz validator against both
  * surfaces (light #ffffff, dark #0a2647):
- *   McDavid vs MacKinnon   worst CVD ΔE 20.3 light / 14.0 dark   (>= 8 target)
+ *   subject vs peer        worst CVD ΔE 20.3 light / 14.0 dark   (>= 8 target)
  *   positive vs negative   worst CVD ΔE 21.6 light / 19.2 dark
+ * The peer slot is one hue whoever occupies it, because only one peer is drawn
+ * at a time -- six hues for six players would have been six ways to be
+ * indistinguishable. The distribution figure instead pairs the subject against
+ * a recessive neutral (ΔE 17.2 light / 19.3 dark) and direct-labels every row,
+ * so identity there never rests on hue either.
  * Win/loss is deliberately NOT green-vs-red: that pair measures ΔE 4.1 under
  * deuteranopia, i.e. indistinguishable. Wins carry the series hue, losses go
  * neutral, and every bar is direct-labelled W/L so hue is never load-bearing.
@@ -22,7 +27,7 @@ export const COMPACT_WIDTH = 520;
 
 export type ChartTheme = {
   mcdavid: string;
-  mackinnon: string;
+  peer: string;
   positive: string;
   negative: string;
   neutralMark: string;
@@ -38,7 +43,7 @@ export type ChartTheme = {
  *  silently reverts every chart to a palette nobody chose. */
 const FALLBACK: ChartTheme = {
   mcdavid: "#fc4c02",
-  mackinnon: "#8e3050",
+  peer: "#8e3050",
   positive: "#2a78d6",
   negative: "#e34948",
   neutralMark: "#7c8ca0",
@@ -51,7 +56,7 @@ const FALLBACK: ChartTheme = {
 
 const VAR_NAMES: Record<keyof ChartTheme, string> = {
   mcdavid: "--c-mcdavid",
-  mackinnon: "--c-mackinnon",
+  peer: "--c-peer",
   positive: "--c-positive",
   negative: "--c-negative",
   neutralMark: "--c-neutral-mark",
@@ -133,6 +138,7 @@ export function peerBars(
   mcd: (number | null)[],
   mac: (number | null)[],
   metricLabel: string,
+  peerName: string,
 ) {
   const series = (
     name: string,
@@ -149,8 +155,108 @@ export function peerBars(
 
   return [
     series("McDavid", mcd, t.mcdavid),
-    series("MacKinnon", mac, t.mackinnon),
+    series(peerName, mac, t.peer),
   ];
+}
+
+/**
+ * Where one player sits among their peers on a single signed measure.
+ *
+ * A lollipop rather than bars: these are four-to-five values on one axis and
+ * bars would put area behind a difference of means. The subject carries the
+ * accent hue and the peers a recessive neutral -- but every row is labelled
+ * with its player and its value, so the highlight is emphasis, not the
+ * encoding. Zero is drawn as a real reference line: it is "no drop at all",
+ * which is a meaningful place for a player to land, and one of them does.
+ */
+export function dropDistribution(
+  t: ChartTheme,
+  rows: { name: string; value: number; isSubject: boolean }[],
+) {
+  const names = rows.map((r) => r.name);
+  const values = rows.map((r) => r.value);
+  return [
+    {
+      type: "scatter",
+      mode: "markers",
+      x: values,
+      y: names,
+      marker: {
+        size: 15,
+        color: rows.map((r) => (r.isSubject ? t.mcdavid : t.neutralMark)),
+        line: { width: 2, color: t.surface },
+      },
+      hovertemplate:
+        "<b>%{y}</b><br>%{x:+.2f} pts/game vs regular season<extra></extra>",
+    },
+  ];
+}
+
+export function dropLayout(
+  t: ChartTheme,
+  rows: { name: string; value: number }[],
+  width = 640,
+) {
+  const base = baseLayout(t, width);
+  const compact = width < COMPACT_WIDTH;
+  const values = rows.map((r) => r.value);
+  const lo = Math.min(0, ...values);
+  const hi = Math.max(0, ...values);
+  const pad = Math.max(0.12, (hi - lo) * 0.22);
+
+  // Explicit ticks, because plotly.js-basic-dist-min ships without d3-format:
+  // `tickformat` is accepted into the layout, silently ignored at render, and
+  // the axis falls back to raw floats ("−0.7000000000000001", "−8.88e−17" for
+  // zero). Computing the labels here is the only way to get a clean axis out
+  // of the partial bundle, and it pins zero as a tick, which this chart needs.
+  const step = 0.2;
+  const first = Math.ceil((lo - pad) / step);
+  const last = Math.floor((hi + pad) / step);
+  const tickvals: number[] = [];
+  for (let i = first; i <= last; i++) tickvals.push(Number((i * step).toFixed(2)));
+  const ticktext = tickvals.map((v) =>
+    v === 0 ? "0" : `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`,
+  );
+
+  return {
+    ...base,
+    // The stick of each lollipop, drawn from zero to the marker.
+    shapes: [
+      ...rows.map((r) => ({
+        type: "line" as const,
+        x0: 0,
+        x1: r.value,
+        y0: r.name,
+        y1: r.name,
+        line: { color: t.grid, width: 2 },
+        layer: "below" as const,
+      })),
+      {
+        type: "line" as const,
+        xref: "x" as const,
+        yref: "paper" as const,
+        x0: 0,
+        x1: 0,
+        y0: 0,
+        y1: 1,
+        line: { color: t.axis, width: 1.5 },
+      },
+    ],
+    xaxis: {
+      ...base.xaxis,
+      range: [lo - pad, hi + pad],
+      zeroline: false,
+      tickmode: "array",
+      tickvals,
+      ticktext,
+      title: {
+        text: "Points per game vs regular season",
+        font: { size: 12, color: t.inkMuted },
+      },
+    },
+    yaxis: { ...base.yaxis, showgrid: false, ticklen: 6, tickcolor: "rgba(0,0,0,0)" },
+    margin: { t: 10, b: compact ? 56 : 52, l: compact ? 84 : 96, r: compact ? 20 : 24 },
+  };
 }
 
 export function peerLayout(t: ChartTheme, yTitle: string, width = 640) {

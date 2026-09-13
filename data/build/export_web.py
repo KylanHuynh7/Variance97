@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,6 +27,10 @@ import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from fetch_player_log import PLAYERS, SUBJECT, clean_log_path  # type: ignore  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
@@ -40,15 +45,27 @@ NUMERIC_FEATURES = [
 ]
 CATEGORICAL_FEATURES = ["game_context"]
 
-# Mirrors the `files` dict on the Streamlit Pipeline Status page.
-TRACKED_FILES = {
-    "McDavid clean (analysis input)": "mcdavid_game_log_clean.csv",
-    "MacKinnon clean (analysis input)": "mackinnon_game_log_clean.csv",
-    "McDavid NHL source (API-derived)": "mcdavid_nhl_log.csv",
-    "MacKinnon NHL source (API-derived)": "mackinnon_nhl_log.csv",
-    "International games (manual entry)": "international_games.csv",
-    "Opponent team stats (NHL standings)": "opponent_team_stats.csv",
-}
+def _tracked_files() -> dict[str, str]:
+    """Files the Pipeline Status page reports on, derived from the registry.
+
+    Listing them by hand meant a peer added to the registry stayed invisible
+    on the status page -- the one page whose job is to show what the pipeline
+    actually maintains.
+    """
+    files: dict[str, str] = {}
+    for key, player in PLAYERS.items():
+        files[f"{player.short_name} clean (analysis input)"] = f"{key}_game_log_clean.csv"
+    for key, player in PLAYERS.items():
+        files[f"{player.short_name} NHL source (API-derived)"] = f"{key}_nhl_log.csv"
+    files["International games (manual entry)"] = "international_games.csv"
+    files["Opponent team stats (NHL standings)"] = "opponent_team_stats.csv"
+    return files
+
+
+TRACKED_FILES = _tracked_files()
+
+# Metrics the peer explorer lets a reader switch between.
+PEER_METRICS = ["points", "goals", "assists", "plus_minus"]
 
 GAME_COLUMNS = [
     "date", "opponent", "goals", "assists", "points", "plus_minus",
@@ -206,6 +223,79 @@ def build_pipeline_section(mcdavid: pd.DataFrame) -> dict:
     }
 
 
+def _series_in_context(df: pd.DataFrame, context: str) -> list[dict]:
+    """One row per playoff series a player played in this context.
+
+    A series is a (season, context) pair -- a player reaches a given round at
+    most once per season -- so this is what lets the page say "Eichel's Finals
+    sample is two series against two opponents" rather than just "n=11".
+    """
+    rows = df[df["game_context"] == context]
+    out = []
+    for season, grp in rows.groupby("season"):
+        wins = int((grp["result"] == "W").sum())
+        losses = int((grp["result"] == "L").sum())
+        out.append({
+            "season": season,
+            # One opponent per series; mode() guards a stray mislabelled row.
+            "opponent": grp["opponent"].mode().iat[0],
+            "games": int(len(grp)),
+            "points_per_game": round(float(grp["points"].mean()), 4),
+            "record": f"{wins}-{losses}",
+            "won": wins > losses,
+        })
+    return sorted(out, key=lambda r: r["season"])
+
+
+def build_players_section() -> list[dict]:
+    """Per-player context aggregates for the peer comparison.
+
+    Aggregates rather than full game logs: the peer page needs means, counts
+    and the Finals series breakdown, and shipping six complete logs would
+    multiply the bundle for numbers no page reads game-by-game. The subject's
+    own log is still exported in full for the other pages.
+    """
+    players = []
+    for key, player in PLAYERS.items():
+        path = clean_log_path(key, DATA_DIR)
+        if not path.exists():
+            print(f"  skip {player.name}: {path.name} missing")
+            continue
+        df = load_games(path.name)
+        nhl = df[df["game_context"].isin(NHL_CONTEXTS)]
+
+        means = {}
+        for metric in PEER_METRICS:
+            means[metric] = [
+                round(float(nhl[nhl["game_context"] == c][metric].mean()), 4)
+                if (nhl["game_context"] == c).any() else None
+                for c in NHL_CONTEXTS
+            ]
+        counts = [int((nhl["game_context"] == c).sum()) for c in NHL_CONTEXTS]
+
+        rs = nhl[nhl["game_context"] == "regular_season"]["points"]
+        scf = nhl[nhl["game_context"] == "stanley_cup_finals"]["points"]
+        drop = (round(float(scf.mean() - rs.mean()), 4)
+                if len(scf) and len(rs) else None)
+
+        players.append({
+            "key": key,
+            "name": player.name,
+            "short_name": player.short_name,
+            "role": player.role,
+            "note": player.note,
+            "counts": counts,
+            "means": means,
+            # None where a player has no Finals appearance in the window --
+            # which is a fact about the peer group, not a missing value to
+            # paper over. Two of the five peers are in that position.
+            "scf_drop": drop,
+            "scf_games": int(len(scf)),
+            "scf_series": _series_in_context(nhl, "stanley_cup_finals"),
+        })
+    return players
+
+
 def build_bundle() -> dict:
     mcdavid = load_games("mcdavid_game_log_clean.csv")
     mackinnon = load_games("mackinnon_game_log_clean.csv")
@@ -213,6 +303,8 @@ def build_bundle() -> dict:
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "mcdavid": games_to_records(mcdavid),
         "mackinnon": games_to_records(mackinnon),
+        "contexts": NHL_CONTEXTS,
+        "players": build_players_section(),
         "model": build_model_section(mcdavid),
         "pipeline": build_pipeline_section(mcdavid),
     }

@@ -50,6 +50,42 @@ export type Model = {
   games: ModelGame[];
 };
 
+/**
+ * Per-context aggregates for one player in the peer group.
+ *
+ * Aggregates rather than a game log: the peer page compares means, counts and
+ * Finals series, and six full logs would multiply the bundle to ship numbers
+ * no page reads game-by-game. The subject's own log is exported in full
+ * separately, for the pages that do.
+ */
+export type PlayerSummary = {
+  key: string;
+  name: string;
+  short_name: string;
+  role: "subject" | "peer";
+  /** Why this player is in the registry, and what caveat they carry. */
+  note: string;
+  /** Games per context, aligned with `contexts`. */
+  counts: number[];
+  /** metric -> per-context means, aligned with `contexts`. */
+  means: Record<string, (number | null)[]>;
+  /**
+   * Regular season to Stanley Cup Finals, in points per game. `null` for a
+   * player with no Finals appearance in the window — a fact about the peer
+   * group, not a missing value.
+   */
+  scf_drop: number | null;
+  scf_games: number;
+  scf_series: {
+    season: string;
+    opponent: string;
+    games: number;
+    points_per_game: number;
+    record: string;
+    won: boolean;
+  }[];
+};
+
 export type PipelineInfo = {
   files: { label: string; path: string; last_refreshed: string; size_kb: number }[];
   total_games: number;
@@ -63,6 +99,16 @@ export const mackinnon = bundle.mackinnon as Game[];
 export const model = bundle.model as Model;
 export const pipeline = bundle.pipeline as PipelineInfo;
 export const generatedAt = bundle.generated_at as string;
+export const players = bundle.players as PlayerSummary[];
+export const contexts = bundle.contexts as string[];
+
+export const subject = players.find((p) => p.role === "subject")!;
+export const peers = players.filter((p) => p.role === "peer");
+
+/** Peers with a Finals appearance in the window, steepest decline last. */
+export const peersWithFinals = peers
+  .filter((p) => p.scf_drop !== null)
+  .sort((a, b) => b.scf_drop! - a.scf_drop!);
 
 export const NHL_CONTEXT_ORDER = [
   "regular_season",

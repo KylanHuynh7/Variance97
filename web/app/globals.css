@@ -29,7 +29,7 @@
 
   /* --- chart palette (validated against #ffffff; see lib/charts.ts) --- */
   --c-mcdavid: #fc4c02;
-  --c-mackinnon: #8e3050;
+  --c-peer: #8e3050;
   --c-positive: #2a78d6;
   --c-negative: #e34948;
   --c-neutral-mark: #7c8ca0;
@@ -89,7 +89,7 @@
   --accent-ink: #ff8a52;
 
   --c-mcdavid: #fc4c02;
-  --c-mackinnon: #c2537a;
+  --c-peer: #c2537a;
   --c-positive: #3987e5;
   --c-negative: #e66767;
   --c-neutral-mark: #7b94b0;
@@ -127,7 +127,7 @@
   --accent-ink: #ff8a52;
 
   --c-mcdavid: #fc4c02;
-  --c-mackinnon: #c2537a;
+  --c-peer: #c2537a;
   --c-positive: #3987e5;
   --c-negative: #e66767;
   --c-neutral-mark: #7b94b0;

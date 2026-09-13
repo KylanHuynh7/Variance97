@@ -26,17 +26,35 @@ This cuts both ways, and the project applies it in both directions. The small-sa
 
 **What would resolve it.** Edmonton reaching the Finals against a non-Florida opponent, or expanding the dataset to include other elite forwards' Finals appearances against multiple opponents.
 
+**A partial probe (added with the peer group).** The confound is about *Edmonton's* Finals and cannot be broken from inside McDavid's data. But another elite centre in the peer group played a Final against the same Panthers core: Jack Eichel, in 2023, when Vegas won the series 4–1 and Eichel scored 1.60 pts/game — above his 1.09 regular-season rate. That does not disentangle anything in McDavid's rows, which stay exactly as confounded as they were. It does rule out the strongest form of the generic claim: "the Panthers system suppresses elite centres" is not a law, because one went through it.
+
 **Status note (2025–26).** Edmonton did not reach the Finals in 2025–26 — they lost the first round to Anaheim — so the confound is unchanged. That series is, however, the first evidence in the window of a large McDavid production drop that Florida cannot be blamed for: 1.00 pts/game against a 1.67 regular-season rate, a drop of 0.67, at −8. It sits in a different context (first round, not Finals) at n=6, so it does not disentangle anything. It does mean the project's reframing now has a visible counterexample, and Limitation #1 applies to it in full.
 
 ---
 
-## 3. Single peer in the comparison
+## 3. A small peer distribution (was: a single peer) — RESOLVED, partially
 
-**The limitation.** Phase 1 and Phase 2 use Nathan MacKinnon as the sole peer baseline. He is a defensible choice (same era, similar usage, won the Cup in 2022), but a single peer is a single data point.
+**The original limitation.** Phases 1 and 2 used Nathan MacKinnon as the sole peer baseline, and the headline finding — that McDavid's regular-season-to-Stanley-Cup-Finals drop is half MacKinnon's — rested on MacKinnon's 6-game 2022 Finals being representative of "elite forward in the Finals."
 
-**Impact.** The headline finding — that McDavid's regular-season-to-Stanley-Cup-Finals drop is half MacKinnon's — depends on MacKinnon's 6-game 2022 Finals being representative of "elite forward in Finals." It may not be.
+**What was done.** The peer group is now five elite centres of the same era, all pulled through the same NHL API pipeline: MacKinnon, Leon Draisaitl, Jack Eichel, Auston Matthews and Sidney Crosby. They were chosen on role and usage in the 2021–22 through 2025–26 window, before their numbers were examined.
 
-**What would resolve it.** Pulling additional peers (Auston Matthews, Sidney Crosby, Leon Draisaitl, Jack Eichel) and reporting the McDavid drop relative to the *distribution* of peer drops, not a single comparison. Same NHL API pipeline as the existing MacKinnon pull.
+**What changed in the conclusion.** The single-peer framing does not survive its own generalization:
+
+| Player | RS → Finals | Relative | n |
+| --- | --- | --- | --- |
+| Eichel | +0.00 | +0% | 11 |
+| McDavid | −0.28 | −17% | 13 |
+| MacKinnon | −0.54 | −35% | 6 |
+| Draisaitl | −0.61 | −42% | 13 |
+
+McDavid is **mid-pack**, not exceptional in either direction. Two peers fell further; one did not fall at all. The claim "his decline is half a comparable peer's" was true of the peer that happened to be picked first.
+
+**What remains.** Three peers with Finals appearances is a distribution of three, on samples of 6 to 13 games. Matthews and Crosby reached no Final in the window and contribute only to the earlier rounds. This is a better baseline than one peer; it is still not a tested effect, and Limitation #1 applies to all of it.
+
+**Two peers are worth reading individually rather than as draws from a distribution.**
+
+- **Draisaitl is a within-team control, not an independent peer.** He played the same two Finals as McDavid, against the same opponent, behind the same defence — and his decline is the steepest here. Whatever Florida did to Edmonton was done to both of them.
+- **Eichel is the only peer to have faced the confound.** Vegas beat those same Panthers in the 2023 Final, and Eichel scored 1.60 pts/game doing it — above his own regular-season rate. See Limitation #2 for what that does and does not resolve.
 
 ---
 

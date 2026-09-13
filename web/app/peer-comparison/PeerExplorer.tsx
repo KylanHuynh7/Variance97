@@ -5,17 +5,21 @@ import Plot from "@/components/Plot";
 import { Callout, DataTable, Figure, Stat, StatRow } from "@/components/ui";
 import { ChartTheme, fmt, fmtSigned, peerBars, peerLayout } from "@/lib/charts";
 
+export type ExplorerPlayer = {
+  key: string;
+  short_name: string;
+  note: string;
+  counts: number[];
+  means: Record<string, (number | null)[]>;
+};
+
 export type PeerStats = {
   contexts: string[];
   labels: string[];
   /** Same categories, wrapped over two lines for the chart axis. */
   chartLabels: string[];
-  counts: { mcdavid: number[]; mackinnon: number[] };
-  /** metric -> per-context means, aligned with `contexts`. */
-  means: Record<
-    string,
-    { mcdavid: (number | null)[]; mackinnon: (number | null)[] }
-  >;
+  subject: ExplorerPlayer;
+  peers: ExplorerPlayer[];
 };
 
 const METRICS = [
@@ -25,9 +29,21 @@ const METRICS = [
   { key: "plus_minus", label: "Plus / minus" },
 ];
 
+/**
+ * One peer at a time, deliberately.
+ *
+ * Six players across five contexts is thirty bars, and on a phone it is thirty
+ * bars in 360 pixels. The distribution figure above already answers "where does
+ * McDavid sit among all of them"; this answers "against this one, in detail",
+ * which is a question about two players.
+ */
 export default function PeerExplorer({ stats }: { stats: PeerStats }) {
   const [selected, setSelected] = useState<string[]>(stats.contexts);
   const [metric, setMetric] = useState("points");
+  const [peerKey, setPeerKey] = useState(stats.peers[0].key);
+
+  const peer = stats.peers.find((p) => p.key === peerKey) ?? stats.peers[0];
+  const subject = stats.subject;
 
   const toggle = (ctx: string) =>
     setSelected((prev) =>
@@ -40,38 +56,55 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
     .map((c, i) => (selected.includes(c) ? i : -1))
     .filter((i) => i >= 0);
 
-  const labels = idxs.map((i) => stats.labels[i]);
   const chartLabels = idxs.map((i) => stats.chartLabels[i]);
-  const mcd = idxs.map((i) => stats.means[metric].mcdavid[i]);
-  const mac = idxs.map((i) => stats.means[metric].mackinnon[i]);
+  const mcd = idxs.map((i) => subject.means[metric][i]);
+  const peerValues = idxs.map((i) => peer.means[metric][i]);
   const metricLabel = METRICS.find((m) => m.key === metric)!.label;
+  const peerName = peer.short_name;
 
   const build = useCallback(
     (t: ChartTheme, w: number) => ({
-      data: peerBars(t, chartLabels, mcd, mac, "per game"),
+      data: peerBars(t, chartLabels, mcd, peerValues, "per game", peerName),
       layout: peerLayout(t, `${metricLabel} per game`, w),
     }),
-    [chartLabels, mcd, mac, metricLabel],
+    [chartLabels, mcd, peerValues, metricLabel, peerName],
   );
+
+  const rsIdx = stats.contexts.indexOf("regular_season");
+  const scfIdx = stats.contexts.indexOf("stanley_cup_finals");
+  const subjectDrop =
+    subject.means.points[scfIdx]! - subject.means.points[rsIdx]!;
+  const peerScf = peer.means.points[scfIdx];
+  const peerDrop = peerScf === null ? null : peerScf - peer.means.points[rsIdx]!;
 
   const showDelta =
     metric === "points" &&
     selected.includes("regular_season") &&
     selected.includes("stanley_cup_finals");
 
-  let mcdDrop = 0;
-  let macDrop = 0;
-  if (showDelta) {
-    const rs = stats.contexts.indexOf("regular_season");
-    const scf = stats.contexts.indexOf("stanley_cup_finals");
-    mcdDrop = stats.means.points.mcdavid[scf]! - stats.means.points.mcdavid[rs]!;
-    macDrop =
-      stats.means.points.mackinnon[scf]! - stats.means.points.mackinnon[rs]!;
-  }
-
   return (
     <>
       <div className="controls">
+        <label className="control">
+          <span className="control-label">Compare against</span>
+          <select value={peerKey} onChange={(e) => setPeerKey(e.target.value)}>
+            {stats.peers.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.short_name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="control">
+          <span className="control-label">Metric</span>
+          <select value={metric} onChange={(e) => setMetric(e.target.value)}>
+            {METRICS.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="control">
           <span className="control-label" id="ctx-label">
             Contexts
@@ -90,17 +123,9 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
             ))}
           </div>
         </div>
-        <label className="control">
-          <span className="control-label">Metric</span>
-          <select value={metric} onChange={(e) => setMetric(e.target.value)}>
-            {METRICS.map((m) => (
-              <option key={m.key} value={m.key}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
+
+      <p className="figure-sub">{peer.note}</p>
 
       {selected.length === 0 ? (
         <Callout kind="warn">
@@ -109,19 +134,19 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
       ) : (
         <>
           <Figure
-            title={`${metricLabel} per game, McDavid vs MacKinnon`}
-            subtitle="Same era, similar usage, both in the playoffs every year of the window."
+            title={`${metricLabel} per game, McDavid vs ${peerName}`}
+            subtitle="By NHL context, across the 2021–22 through 2025–26 window."
             legend={[
               { label: "McDavid", color: "var(--c-mcdavid)" },
-              { label: "MacKinnon", color: "var(--c-mackinnon)" },
+              { label: peerName, color: "var(--c-peer)" },
             ]}
-            number={1}
-            caption="Sample sizes vary sharply by context and are listed below; the deepest rounds carry the smallest samples."
+            number={2}
+            caption="Sample sizes vary sharply by context and are listed below; the deepest rounds carry the smallest samples. A missing bar is a context that player never reached."
           >
             <Plot
               build={build}
               height={360}
-              ariaLabel={`Grouped bar chart comparing McDavid and MacKinnon ${metricLabel.toLowerCase()} per game. Values are listed in the table below.`}
+              ariaLabel={`Grouped bar chart comparing McDavid and ${peerName} ${metricLabel.toLowerCase()} per game. Values are listed in the table below.`}
             />
           </Figure>
 
@@ -131,52 +156,52 @@ export default function PeerExplorer({ stats }: { stats: PeerStats }) {
               { key: "context", header: "Context" },
               { key: "mcd", header: "McDavid", numeric: true },
               { key: "nMcd", header: "n (McD)", numeric: true },
-              { key: "mac", header: "MacKinnon", numeric: true },
-              { key: "nMac", header: "n (Mac)", numeric: true },
+              { key: "peer", header: peerName, numeric: true },
+              { key: "nPeer", header: `n (${peerName})`, numeric: true },
             ]}
             rows={idxs.map((i) => ({
               context: stats.labels[i],
-              mcd: fmt(stats.means[metric].mcdavid[i]),
-              nMcd: stats.counts.mcdavid[i],
-              mac: fmt(stats.means[metric].mackinnon[i]),
-              nMac: stats.counts.mackinnon[i],
+              mcd: fmt(subject.means[metric][i]),
+              nMcd: subject.counts[i],
+              peer: fmt(peer.means[metric][i]),
+              nPeer: peer.counts[i],
             }))}
           />
 
           {showDelta && (
             <>
-              <h2>Regular season to Stanley Cup Finals</h2>
+              <h3>Regular season to Stanley Cup Finals</h3>
               <StatRow>
                 <Stat
                   label="McDavid"
-                  value={fmtSigned(mcdDrop)}
+                  value={fmtSigned(subjectDrop)}
                   unit="pts/game"
                   accent
                 />
                 <Stat
-                  label="MacKinnon"
-                  value={fmtSigned(macDrop)}
-                  unit="pts/game"
+                  label={peerName}
+                  value={peerDrop === null ? "—" : fmtSigned(peerDrop)}
+                  unit={peerDrop === null ? undefined : "pts/game"}
+                  note={
+                    peerDrop === null
+                      ? "No Finals appearance in the window."
+                      : `n=${peer.counts[scfIdx]} Finals games.`
+                  }
                 />
                 <Stat
                   label="Ratio"
                   value={
-                    mcdDrop === 0
+                    peerDrop === null || subjectDrop === 0
                       ? "—"
-                      : `${Math.abs(macDrop / mcdDrop).toFixed(1)}×`
+                      : `${Math.abs(peerDrop / subjectDrop).toFixed(1)}×`
                   }
-                  note="MacKinnon's decline relative to McDavid's."
+                  note={
+                    peerDrop === null
+                      ? "Undefined without a Finals sample."
+                      : `${peerName}'s decline relative to McDavid's.`
+                  }
                 />
               </StatRow>
-              <Callout kind="key" label="The headline finding">
-                <p>
-                  McDavid&rsquo;s individual Stanley Cup Finals decline is{" "}
-                  <em>smaller</em> than a directly comparable peer&rsquo;s — and
-                  that peer won the Cup. The popular{" "}
-                  <em>&ldquo;can&rsquo;t perform on the big stage&rdquo;</em>{" "}
-                  thesis does not survive contact with peer data.
-                </p>
-              </Callout>
             </>
           )}
         </>

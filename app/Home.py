@@ -41,15 +41,22 @@ mackinnon = data_loader.load_mackinnon()
 fig = charts.peer_by_context(mcdavid, mackinnon, NHL_CONTEXT_ORDER)
 st.plotly_chart(fig, width='stretch')
 
-# Delta callout
-mcd_drop = (
-    mcdavid[mcdavid["game_context"] == "stanley_cup_finals"]["points"].mean()
-    - mcdavid[mcdavid["game_context"] == "regular_season"]["points"].mean()
-)
-mac_drop = (
-    mackinnon[mackinnon["game_context"] == "stanley_cup_finals"]["points"].mean()
-    - mackinnon[mackinnon["game_context"] == "regular_season"]["points"].mean()
-)
+
+def _scf_drop(df):
+    """Regular season to Stanley Cup Finals, or None without a Finals sample."""
+    scf = df[df["game_context"] == "stanley_cup_finals"]["points"]
+    rs = df[df["game_context"] == "regular_season"]["points"]
+    return scf.mean() - rs.mean() if len(scf) and len(rs) else None
+
+
+mcd_drop = _scf_drop(mcdavid)
+peer_drops = {
+    data_loader.PLAYER_NAMES[key]: _scf_drop(data_loader.load_player(key))
+    for key in data_loader.PEER_KEYS
+}
+with_finals = {k: v for k, v in peer_drops.items() if v is not None}
+steeper = [k for k, v in with_finals.items() if v < mcd_drop]
+shallower = [k for k, v in with_finals.items() if v > mcd_drop]
 
 col1, col2, col3 = st.columns(3)
 col1.metric(
@@ -58,14 +65,14 @@ col1.metric(
     help="Drop in points/game between regular season and Stanley Cup Finals.",
 )
 col2.metric(
-    "MacKinnon: regular season → SCF",
-    f"{mac_drop:+.2f} pts/game",
-    help="MacKinnon's drop, for comparison. He won the 2022 Cup.",
+    f"Peers who fell further ({len(steeper)} of {len(with_finals)})",
+    ", ".join(steeper) or "none",
+    help="Peers whose regular-season-to-Finals decline is steeper than McDavid's.",
 )
 col3.metric(
-    "Ratio",
-    f"{abs(mac_drop / mcd_drop):.1f}×",
-    help="MacKinnon's drop is this many times larger than McDavid's.",
+    f"Peers who held up better ({len(shallower)} of {len(with_finals)})",
+    ", ".join(shallower) or "none",
+    help="Peers whose decline is shallower than McDavid's.",
 )
 
 st.markdown(narrative.PEER_FOOTER)
