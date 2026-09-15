@@ -2,9 +2,10 @@
 # Variance97 data pipeline — one-shot CLI wrapper.
 # Run from any directory; resolves repo root from the script's own location.
 #
-# Two steps:
+# Three steps (the daily GitHub Action runs the same ones):
 #   1. update_all.py  — refresh the CSVs from the NHL API (Phase 4)
-#   2. export_web.py  — recompute web/public/data.json for the static site
+#   2. check_data.py  — stop if the result fails a sanity check
+#   3. export_web.py  — recompute web/public/data.json for the static site
 #
 # Commit the changed CSVs *and* web/public/data.json; the deployment rebuilds
 # from that JSON, so skipping step 2 leaves the site showing stale numbers.
@@ -15,5 +16,6 @@ cd "$REPO_ROOT"
 
 echo "[$(date)] variance97 update — repo: $REPO_ROOT"
 python3 data/build/update_all.py
+python3 data/build/check_data.py
 python3 data/build/export_web.py
 echo "[$(date)] done."

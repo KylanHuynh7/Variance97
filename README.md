@@ -118,7 +118,21 @@ git add data web/public/data.json
 git commit -m "data: refresh" && git push   # push triggers the redeploy
 ```
 
-Idempotent — running with no new games reports `+0` and exits cleanly. Safe to put on a daily cron during the season.
+Idempotent — running with no new games reports `+0` and exits cleanly.
+
+### It runs itself: the daily GitHub Action
+
+`.github/workflows/update-data.yml` does all of the above every day at 14:00 UTC (7am Pacific) on a GitHub-hosted machine:
+
+1. check out the repo and install `requirements.txt`
+2. `update_all.py` — refresh the CSVs from the NHL API
+3. `check_data.py` — stop if the data fails a sanity check (teammates disagree, a result contradicts its score, a row is unenriched, an opponent joined no strength)
+4. `export_web.py --verify` — rebuild `web/public/data.json`
+5. if any CSV changed, commit as `github-actions[bot]` and push to `main`, which redeploys the site
+
+A day with no games commits nothing. A failed step publishes nothing, so the site keeps yesterday's numbers, and GitHub emails the failure. To run it by hand: **Actions → Update data → Run workflow**.
+
+GitHub switches off scheduled workflows in a public repo after 60 days without a commit, and the NHL offseason is longer than that. Each autumn, check the Actions tab and re-enable it if needed.
 
 ## Live dashboard
 
@@ -177,6 +191,7 @@ data/
         apply_features.py          # is_elimination_game + ML features
         seasons.py                 # season ids/labels, derived from the clock
         update_all.py              # pipeline orchestrator
+        check_data.py              # sanity checks run before publishing
         export_web.py              # -> web/public/data.json (build-time bundle)
     <player>_nhl_log.csv           # API source, one per registry player
     <player>_game_log_clean.csv    # pipeline output (analysis input)
@@ -198,8 +213,10 @@ app/                               # Streamlit fallback dashboard
     pages/                         # Three Acts, Peer Comparison, ...
     components/                    # data loaders, charts, model, narrative
 .streamlit/config.toml             # theme + server config
+.github/workflows/
+    update-data.yml                # daily refresh: fetch, check, export, push
 scripts/
-    run_update.sh                  # CLI wrapper for cron / CI
+    run_update.sh                  # the same steps, run locally
 requirements.txt
 TRACING.md                         # continuity / session handoff
 LIMITATIONS.md

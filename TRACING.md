@@ -227,7 +227,13 @@ cd notebooks && python3 -m nbconvert --to notebook --execute --inplace \
   --ExecutePreprocessor.timeout=900 01_data_loading_and_exploration.ipynb
 ```
 
-Publishing: push to `main`. Vercel rebuilds automatically.
+Publishing: push to `main`. Vercel rebuilds automatically. In season, the daily
+GitHub Action does the refresh-and-push itself; check its runs under the
+repo's Actions tab before refreshing by hand.
+
+```bash
+python3 data/build/check_data.py   # what the Action runs before it publishes
+```
 
 ```bash
 bash scripts/run_update.sh
@@ -304,9 +310,16 @@ In the order agreed with Kylan, with the first item now done.
 1. ~~**Peer distribution (LIMITATIONS #3)**~~ — done, `dce542d`.
 2. ~~**Goalie features (LIMITATIONS #5)**~~ — done, `feat/goalie-features`. No
    signal. High-danger save% is not in the NHL API; it moved to item 4.
-3. **Daily pipeline GitHub Action** — up next. Note for the build: the Pipeline
-   Status page reads CSV mtimes, which on a CI checkout are the checkout time,
-   not the refresh time. — the repo has **no `.github/` directory at
+3. ~~**Daily pipeline GitHub Action**~~ — done, `.github/workflows/update-data.yml`.
+   Daily at 14:00 UTC: `update_all` → `check_data` → `export_web --verify` →
+   commit and push only if a CSV changed. Two supporting changes: the Pipeline
+   Status page now dates files by last git commit (a CI checkout resets every
+   mtime), and `check_data.py` automates the teammate oracle plus score, date,
+   enrichment and opponent-join checks, so a bad fetch cannot auto-publish.
+   **Known upkeep:** GitHub disables scheduled workflows after 60 days with no
+   commits, and the offseason is longer — re-enable it each autumn. Each run
+   also refetches ~36 goalie-seasons with no games (pre-NHL seasons), which
+   leave no rows to cache; harmless, ~70 calls. — the repo has **no `.github/` directory at
    all**. The Phase 5 plan listed this as a stretch and it was never built. The
    2026-27 season opens next month, and `seasons.py` plus the pre-season fix are
    now ready for a cron that runs through the rollover.

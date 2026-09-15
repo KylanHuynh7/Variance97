@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import math
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -191,14 +192,41 @@ def build_model_section(mcdavid: pd.DataFrame) -> dict:
     }
 
 
+def _last_changed(path: Path) -> pd.Timestamp:
+    """When this file's contents last changed.
+
+    File mtimes can't answer that: a git checkout stamps every file with the
+    checkout time, so on the daily GitHub Action every file would read as
+    refreshed that minute. A file with no uncommitted changes is dated by the
+    last commit that touched it instead. A file that *does* have uncommitted
+    changes -- which is what a pipeline run that found new games produces --
+    was changed just now, and its mtime says so.
+    """
+    rel = str(path.relative_to(REPO_ROOT))
+    try:
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--", rel],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        if not dirty:
+            committed = subprocess.run(
+                ["git", "log", "-1", "--format=%ct", "--", rel],
+                cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+            ).stdout.strip()
+            if committed:
+                return pd.Timestamp(int(committed), unit="s", tz="UTC")
+    except (OSError, subprocess.CalledProcessError):
+        pass  # no git available: mtime is the best there is
+    return pd.Timestamp(path.stat().st_mtime, unit="s", tz="UTC")
+
+
 def build_pipeline_section(mcdavid: pd.DataFrame) -> dict:
     files = []
     for label, name in TRACKED_FILES.items():
         path = DATA_DIR / name
         if path.exists():
             stat = path.stat()
-            refreshed = (pd.Timestamp(stat.st_mtime, unit="s", tz="UTC")
-                         .tz_convert("US/Pacific"))
+            refreshed = _last_changed(path).tz_convert("US/Pacific")
             files.append({
                 "label": label,
                 "path": f"data/{name}",
