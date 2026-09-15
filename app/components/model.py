@@ -17,7 +17,7 @@ NHL_CONTEXTS = ["regular_season", "first_round", "second_round",
 
 NUMERIC_FEATURES = [
     "game_number", "is_elimination_game", "is_back_to_back",
-    "rest_days", "rolling_pts_5", "opp_ga_per_game",
+    "rest_days", "rolling_pts_5", "opp_ga_per_game", "opp_goalie_sv_pct",
 ]
 CATEGORICAL_FEATURES = ["game_context"]
 
@@ -25,7 +25,8 @@ CATEGORICAL_FEATURES = ["game_context"]
 def _prepare(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series, pd.DataFrame]:
     """Filter to NHL games with full features, build X / y, return df slice too."""
     df = df[df["game_context"].isin(NHL_CONTEXTS)].copy()
-    required = ["points", "opp_ga_per_game", "rest_days", "rolling_pts_5"]
+    required = ["points", "opp_ga_per_game", "rest_days", "rolling_pts_5",
+                "opp_goalie_sv_pct"]
     df = df.dropna(subset=required).reset_index(drop=True)
     df["game_number"] = df["game_number"].fillna(0).astype(int)
     df["is_elimination_game"] = df["is_elimination_game"].astype(int)

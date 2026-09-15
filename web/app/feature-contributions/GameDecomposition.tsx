@@ -61,7 +61,7 @@ export default function GameDecomposition({ model }: { model: Model }) {
       </div>
 
       <Figure
-        title={`${game.date} · versus ${game.opponent}`}
+        title={`${game.date} · versus ${game.opponent}${game.opp_goalie_name ? ` (${game.opp_goalie_name} in goal)` : ""}`}
         subtitle="Each feature's signed push on the model's prediction for this game."
         legend={[
           { label: "Raises the prediction", color: "var(--c-positive)" },

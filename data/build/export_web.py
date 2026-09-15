@@ -41,7 +41,7 @@ NHL_CONTEXTS = ["regular_season", "first_round", "second_round",
 
 NUMERIC_FEATURES = [
     "game_number", "is_elimination_game", "is_back_to_back",
-    "rest_days", "rolling_pts_5", "opp_ga_per_game",
+    "rest_days", "rolling_pts_5", "opp_ga_per_game", "opp_goalie_sv_pct",
 ]
 CATEGORICAL_FEATURES = ["game_context"]
 
@@ -59,6 +59,7 @@ def _tracked_files() -> dict[str, str]:
         files[f"{player.short_name} NHL source (API-derived)"] = f"{key}_nhl_log.csv"
     files["International games (manual entry)"] = "international_games.csv"
     files["Opponent team stats (NHL standings)"] = "opponent_team_stats.csv"
+    files["Opposing goalie game logs (NHL API)"] = "goalie_game_logs.csv"
     return files
 
 
@@ -72,6 +73,7 @@ GAME_COLUMNS = [
     "SOG", "TOI", "result", "team_score", "opp_score", "game_number",
     "game_context", "season", "is_elimination_game", "rest_days",
     "is_back_to_back", "rolling_pts_5", "opp_ga_per_game",
+    "opp_goalie_name", "opp_goalie_sv_pct",
 ]
 
 
@@ -111,7 +113,8 @@ def games_to_records(df: pd.DataFrame) -> list[dict]:
 def prepare(df: pd.DataFrame):
     """Identical to app/components/model.py::_prepare."""
     df = df[df["game_context"].isin(NHL_CONTEXTS)].copy()
-    required = ["points", "opp_ga_per_game", "rest_days", "rolling_pts_5"]
+    required = ["points", "opp_ga_per_game", "rest_days", "rolling_pts_5",
+                "opp_goalie_sv_pct"]
     df = df.dropna(subset=required).reset_index(drop=True)
     df["game_number"] = df["game_number"].fillna(0).astype(int)
     df["is_elimination_game"] = df["is_elimination_game"].astype(int)
@@ -178,6 +181,7 @@ def build_model_section(mcdavid: pd.DataFrame) -> dict:
             {
                 "date": df_used.iloc[i]["date"].strftime("%Y-%m-%d"),
                 "opponent": df_used.iloc[i]["opponent"],
+                "opp_goalie_name": _clean(df_used.iloc[i].get("opp_goalie_name")),
                 "game_context": df_used.iloc[i]["game_context"],
                 "points": int(df_used.iloc[i]["points"]),
                 "x": [round(float(v), 6) for v in X.iloc[i].values],
