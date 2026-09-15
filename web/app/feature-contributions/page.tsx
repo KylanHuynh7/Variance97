@@ -18,6 +18,10 @@ export default function FeatureContributionsPage() {
       (c) => c.feature === "game_context_stanley_cup_finals",
     )?.coefficient ?? 0;
 
+  const goalieCoef =
+    model.coefficients.find((c) => c.feature === "opp_goalie_sv_pct")
+      ?.coefficient ?? 0;
+
   const ranked = [...model.coefficients].sort(
     (a, b) => Math.abs(b.coefficient) - Math.abs(a.coefficient),
   );
@@ -54,7 +58,8 @@ export default function FeatureContributionsPage() {
       <p>
         Then real gameplay features were allowed to compete —{" "}
         <code>opp_ga_per_game</code>, <code>game_number</code>,{" "}
-        <code>rolling_pts_5</code>, <code>rest_days</code>. The Finals
+        <code>rolling_pts_5</code>, <code>rest_days</code>, and the opposing
+        goalie&rsquo;s <code>opp_goalie_sv_pct</code>. The Finals
         coefficient collapsed to {fmtSigned(finalsCoef, 3)} — near zero, and
         pointing the <em>wrong way</em> for the narrative. The variance it had
         been holding rerouted to late-series fatigue and opponent defensive
@@ -115,6 +120,16 @@ export default function FeatureContributionsPage() {
         in for H3 — opponent defensive quality moves the needle. And the feature
         the original framing treated as decisive has, on these features, very
         little left to say.
+      </p>
+
+      <p>
+        The goalie does not move it either. <code>opp_goalie_sv_pct</code> — the
+        opposing starter&rsquo;s save percentage over the prior year — comes in
+        at {fmtSigned(goalieCoef, 3)}, and its sign flips depending on how much
+        a small sample is shrunk toward league average. Whatever suppression
+        the model finds lives in team defence, not in who was in net. Raw save
+        percentage ignores shot quality, so this is not the last word on
+        goaltending; it is the last word this dataset can offer.
       </p>
 
       <Rule />

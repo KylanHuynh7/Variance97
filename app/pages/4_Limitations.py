@@ -79,12 +79,17 @@ with st.expander("**3. Points only, no on-ice or shift-level metrics**"):
         "Natural Stat Trick / MoneyPuck integration is a known follow-on."
     )
 
-with st.expander("**4. No goalie-specific features**"):
+with st.expander("**4. Goalie features: added, and they carry no signal**"):
     st.markdown(
-        "`opp_ga_per_game` captures team defensive quality (system + goalie combined) "
-        "but cannot isolate the goalie. Without per-game starting-goalie data plus "
-        "save% / high-danger save%, we can't say \"Hellebuyck specifically\" — only "
-        "\"vs USA in this tournament window.\""
+        "Resolved for NHL games. The model now knows the opposing starter and his "
+        "save% over the prior year, shrunk toward league average. Its coefficient is "
+        "−0.010, the smallest in the model; the sign flips with the amount of "
+        "shrinkage; and it makes out-of-sample fit slightly worse. Going into both "
+        "Finals, Bobrovsky's prior-year save% was league average.\n\n"
+        "So \"an elite goalie suppresses him\" is not supported at the goalie level. "
+        "What remains: raw save% ignores shot quality (goals saved above expected "
+        "needs xG data, item 3), and international games have no boxscore, so the "
+        "Hellebuyck sample is still n=3."
     )
 
 with st.expander("**5. Phase 3 is scoped to NHL games only**"):
@@ -117,8 +122,8 @@ with st.expander("**8. `rest_days` is computed from McDavid game gaps**"):
     st.markdown(
         "Not from Edmonton's actual schedule. If McDavid sat out a team game (rest, "
         "injury), the feature treats the next game as if no rest occurred. McDavid "
-        "rarely sits and the coefficient is near zero anyway, but the feature is "
-        "technically a misstatement when he misses a team game."
+        "rarely sits, so the misstatement is rare, but the coefficient is −0.08 — "
+        "small, not negligible, and worth measuring correctly."
     )
 
 st.divider()

@@ -5,7 +5,7 @@ where it currently *stands*, what changed recently and why, what is known to be
 fragile, and what is worth doing next. Read this first when picking the project
 back up cold.
 
-**Last updated:** 2026-09-12 · `main` at `dce542d` · deployed and verified live.
+**Last updated:** 2026-09-14 · goalie features on `feat/goalie-features` (see §3). `main` at `1b51e2e` is what is deployed.
 
 ---
 
@@ -17,7 +17,7 @@ back up cold.
 | Live site | https://variance97.vercel.app — serving the current numbers (verified). |
 | Dataset | Through **2026-04-30**. 478 McDavid games (468 NHL + 10 international). |
 | Peer group | 6 players tracked: McDavid + MacKinnon, Draisaitl, Eichel, Matthews, Crosby. |
-| Model | Ridge on 463 in-scope NHL games, `regular_season` as pinned baseline. |
+| Model | Ridge on 463 in-scope NHL games, 11 features including `opp_goalie_sv_pct`, `regular_season` as pinned baseline. |
 | Season | Offseason. 2026-27 opens **October 2026** — the pipeline is ready for it (see §5). |
 
 ### The numbers a new session should know
@@ -34,7 +34,8 @@ Regular season → Stanley Cup Finals, points per game:
 Matthews and Crosby reached no Final in the window (they contribute to earlier
 rounds only). Ridge coefficient on `game_context_stanley_cup_finals`: **+0.051**
 on the full refit, **+0.04** on the notebook's chronological training split.
-`game_number` is the largest at **−0.28**.
+`game_number` is the largest at **−0.28**. `opp_goalie_sv_pct` is the smallest
+at **−0.010** (+0.015 on the notebook split).
 
 ---
 
@@ -53,6 +54,12 @@ narrower, and it has moved twice in recent work — in both directions.
 - Once real gameplay features compete, the "Stanley Cup Finals" label carries
   essentially nothing (+0.05). The signal lives in `game_number` (late-series)
   and `opp_ga_per_game` (opponent quality).
+- **The goalie carries nothing.** The opposing starter's prior-year save%
+  (shrunk to league average) is −0.010, flips sign with the shrinkage prior,
+  and worsens cross-validated fit. Bobrovsky's prior-year save% going into both
+  Finals was league average (.910, .904). H3's "elite goaltender" form is not
+  supported at the goalie level; the suppression lives in team defence. Caveat:
+  raw save% ignores shot quality — GSAx needs xG data (roadmap item 4).
 
 **What was retracted:**
 
@@ -117,6 +124,24 @@ a claim about pointless games that was off by seventeen.
 
 Replaced the single peer with five. Cost the project its tidiest claim, which is
 the reason the exercise was worth doing. Also surfaced three bugs — see §4.
+
+### `feat/goalie-features` — the opposing goalie, tested
+
+- Boxscore enrichment now stores the opposing starter (`opp_goalie_id`,
+  `opp_goalie_name`). A row missing them counts as stale, exactly like a row
+  missing `result` — so the first run after the upgrade backfilled every
+  player's full history with no `--rebuild`. Every pre-existing value in all 14
+  CSVs was verified identical afterwards.
+- `fetch_goalie_logs.py` pulls each opposing goalie's own game log (current
+  and prior season) into `goalie_game_logs.csv`: 131 goalies, ~16k rows.
+  Finished seasons are cached; the current one is always refetched.
+- `opp_goalie_sv_pct` in `apply_features.py`: 365-day window strictly before
+  the game, blended with 1,000 shots at the pooled league rate.
+- The teammate oracle now covers the goalie too: McDavid and Draisaitl agree
+  on the opposing starter in all 443 shared games.
+- Result: no signal. See §2 and LIMITATIONS #5.
+- Also fixed: LIMITATIONS #9 quoted a stale `rest_days` coefficient (−0.052;
+  it is −0.081).
 
 ---
 
@@ -277,12 +302,11 @@ and produces a large noise diff. Edit by hand.
 In the order agreed with Kylan, with the first item now done.
 
 1. ~~**Peer distribution (LIMITATIONS #3)**~~ — done, `dce542d`.
-2. **Goalie features (LIMITATIONS #5)** — per-game starting goalie from the
-   boxscore endpoint, joined to season save% and high-danger save%. This is now
-   the highest-value item left: Eichel's 2023 Final gave H3 its first real
-   probe, and goalie data is what would sharpen it from "versus the United
-   States in this window" to "versus Hellebuyck."
-3. **Daily pipeline GitHub Action** — the repo has **no `.github/` directory at
+2. ~~**Goalie features (LIMITATIONS #5)**~~ — done, `feat/goalie-features`. No
+   signal. High-danger save% is not in the NHL API; it moved to item 4.
+3. **Daily pipeline GitHub Action** — up next. Note for the build: the Pipeline
+   Status page reads CSV mtimes, which on a CI checkout are the checkout time,
+   not the refresh time. — the repo has **no `.github/` directory at
    all**. The Phase 5 plan listed this as a stretch and it was never built. The
    2026-27 season opens next month, and `seasons.py` plus the pre-season fix are
    now ready for a cron that runs through the rollover.

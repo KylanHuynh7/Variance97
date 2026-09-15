@@ -59,15 +59,26 @@ const FULL_LIST: { key: string; title: React.ReactNode; body: React.ReactNode }[
   },
   {
     key: "no-goalie",
-    title: "No goalie-specific features",
+    title: "Goalie features: added, and they carry no signal",
     body: (
-      <p>
-        <code>opp_ga_per_game</code> captures team defensive quality — system and
-        goaltender combined — but cannot isolate the goaltender. Without
-        per-game starter data plus save percentage and high-danger save
-        percentage, the claim can only be &ldquo;versus the United States in this
-        tournament window,&rdquo; never &ldquo;Hellebuyck specifically.&rdquo;
-      </p>
+      <>
+        <p>
+          This one has been resolved for NHL games. The model now knows the
+          opposing starter in every game and his save percentage over the
+          prior year, shrunk toward league average. Its coefficient is −0.010,
+          the smallest in the model; its sign flips depending on how much
+          shrinkage is applied; and it makes out-of-sample fit slightly worse.
+          Going into both Finals, Bobrovsky&rsquo;s prior-year save percentage
+          was league average.
+        </p>
+        <p>
+          So &ldquo;an elite goaltender suppresses him&rdquo; is not supported at
+          the goalie level. What remains: raw save percentage ignores shot
+          quality, and the fix for that (goals saved above expected) needs the
+          expected-goals data in the item above. International games have no
+          boxscore, so the Hellebuyck sample is still three games.
+        </p>
+      </>
     ),
   },
   {
@@ -120,8 +131,9 @@ const FULL_LIST: { key: string; title: React.ReactNode; body: React.ReactNode }[
       <p>
         Not from Edmonton&rsquo;s actual schedule. If McDavid sat out a team game
         for rest or injury, the feature treats the next game as though no rest
-        occurred. He rarely sits and the coefficient is near zero regardless, but
-        the feature is technically a misstatement whenever he misses a team game.
+        occurred. He rarely sits, so the misstatement is rare, but the
+        coefficient is −0.08 &mdash; small, not negligible, and worth measuring
+        correctly.
       </p>
     ),
   },

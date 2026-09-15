@@ -36,7 +36,11 @@ st.markdown(
     "`opp_ga_per_game` carries the modest positive effect that represents H3 "
     "(opponent defensive quality matters). And **`game_context_stanley_cup_finals` "
     "is small** once it has to compete against gameplay variables — the feature "
-    "the original notebook treated as dominant has dissolved."
+    "the original notebook treated as dominant has dissolved.\n\n"
+    "**The goalie doesn't move it either.** `opp_goalie_sv_pct` — the opposing "
+    "starter's save% over the prior year — is near zero, and its sign flips with "
+    "how much a small sample is shrunk toward league average. Whatever suppression "
+    "the model finds lives in team defence, not in who was in net."
 )
 
 st.divider()
