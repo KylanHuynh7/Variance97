@@ -1,0 +1,83 @@
+# Daily data refresh.
+#
+# Runs the same two steps as scripts/run_update.sh on a GitHub-hosted machine,
+# checks the result, and pushes to main only if a data file actually changed.
+# That push is what redeploys the site: Vercel rebuilds on every push to main,
+# whoever made it.
+#
+# To run it by hand: GitHub -> Actions -> "Update data" -> Run workflow.
+#
+# A failed step stops the run before anything is committed, so the site keeps
+# serving yesterday's numbers and GitHub emails whoever last edited this file.
+# The pipeline itself is built to fail loudly rather than write a short or
+# half-fetched file, so a red run means "nothing published", never "something
+# wrong published".
+#
+# Caveat: GitHub disables scheduled workflows in a public repo after 60 days
+# with no commits. The NHL offseason is longer than that, so expect to
+# re-enable this each autumn (Actions tab -> "Update data" -> Enable workflow).
+
+name: Update data
+
+on:
+  schedule:
+    # 14:00 UTC is 7am Pacific: every game has ended and its boxscore is final.
+    # GitHub can start scheduled runs late when it is busy; that is harmless.
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to push the refreshed data back to main
+
+# Never let two refreshes race each other to push.
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+        with:
+          # Full history: the Pipeline Status page dates each file by the last
+          # commit that changed it, which a shallow clone cannot see.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Refresh the CSVs from the NHL API
+        run: python3 data/build/update_all.py
+
+      - name: Check the data before publishing it
+        run: python3 data/build/check_data.py
+
+      - name: Rebuild the web bundle
+        run: python3 data/build/export_web.py --verify
+
+      - name: Commit and push, if any data changed
+        run: |
+          # data.json is regenerated on every run (it carries a timestamp), so
+          # it is not a signal. A changed or new CSV is. The pattern is the CSVs
+          # only: data/ also holds the pipeline's code in data/build/.
+          if [ -z "$(git status --porcelain -- 'data/*.csv')" ]; then
+            echo "No new data. Nothing to commit."
+            exit 0
+          fi
+          git status --short -- 'data/*.csv'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- 'data/*.csv' web/public/data.json
+          git commit -m "data: daily refresh $(date -u +%Y-%m-%d)"
+          # If someone pushed while this ran, replay on top rather than fail.
+          git pull --rebase origin main
+          git push origin main
