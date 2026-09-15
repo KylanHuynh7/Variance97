@@ -45,7 +45,7 @@ This cuts both ways, and the project applies it in both directions. The small-sa
 | Eichel | +0.00 | +0% | 11 |
 | McDavid | −0.28 | −17% | 13 |
 | MacKinnon | −0.54 | −35% | 6 |
-| Draisaitl | −0.61 | −42% | 13 |
+| Draisaitl | −0.60 | −42% | 13 |
 
 McDavid is **mid-pack**, not exceptional in either direction. Two peers fell further; one did not fall at all. The claim "his decline is half a comparable peer's" was true of the peer that happened to be picked first.
 
