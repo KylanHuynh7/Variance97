@@ -2,10 +2,10 @@
 
 Data science investigation of Connor McDavid's performance in high-stakes hockey across the NHL Stanley Cup Playoffs (2021–22 through 2025–26), the 2025 Four Nations Face-Off, and the 2026 Winter Olympics.
 
-> **Picking this up after a break?** [`TRACING.md`](TRACING.md) is the continuity
-> document: current state, what changed recently and why, the bugs that are worth
-> knowing about as classes rather than incidents, and what to do next. This file
-> explains what the project is; that one explains where it stands.
+> **Picking this up after a break?** Start with [`AGENDA.md`](AGENDA.md): where the
+> last session stopped and what comes next. [`METHODOLOGY.md`](METHODOLOGY.md) is
+> the full record of how everything works and why each choice was made.
+> [`LIMITATIONS.md`](LIMITATIONS.md) covers what the analysis cannot claim.
 
 ## The question, narrowed
 
@@ -13,7 +13,7 @@ The popular narrative is that Connor McDavid can't win the big one. The data tel
 
 - McDavid **won** the 2025 Four Nations Face-Off, scoring the OT winner himself in the final.
 - McDavid **set the Olympic scoring record** with 13 points in 6 games at the 2026 Milan Cortina Games.
-- McDavid's individual Stanley Cup Finals production drops about **0.28 pts/game** vs his regular season — which means nothing until it is compared. Measured against five elite centres of the same era, **McDavid is mid-pack**: of the three who reached a Final in this window, MacKinnon (−0.54, and he won the Cup) and Draisaitl (−0.61) fell further, while Jack Eichel (+0.00) did not fall at all.
+- McDavid's individual Stanley Cup Finals production drops about **0.28 pts/game** vs his regular season — which means nothing until it is compared. Measured against five elite centres of the same era, **McDavid is mid-pack**: of the three who reached a Final in this window, MacKinnon (−0.54, and he won the Cup) and Draisaitl (−0.60) fell further, while Jack Eichel (+0.00) did not fall at all.
 
 So the working thesis isn't "McDavid underperforms in championship-level games." It's narrower: **his teams keep losing deep playoff runs even when his individual production isn't unusually low for an elite forward.** The project tests where the predictive signal actually lives, against three hypotheses:
 
@@ -218,7 +218,8 @@ app/                               # Streamlit fallback dashboard
 scripts/
     run_update.sh                  # the same steps, run locally
 requirements.txt
-TRACING.md                         # continuity / session handoff
+AGENDA.md                          # where we left off, what's next (rewritten each session)
+METHODOLOGY.md                     # how it works and why (grows over time)
 LIMITATIONS.md
 PHASE4_PLAN.md
 PHASE5_PLAN.md
