@@ -68,13 +68,30 @@ McDavid is **mid-pack**, not exceptional in either direction. Two peers fell fur
 
 ---
 
-## 5. No goalie-specific features
+## 5. Goalie features (was: none) — RESOLVED for NHL games, and the answer is "no signal"
 
-**The limitation.** The Hellebuyck and Bobrovsky claims rely on opponent identification (USA, FLA) and game context, not on goalie-specific stats. There is no `opposing_goalie_save_pct` feature.
+**The original limitation.** The Hellebuyck and Bobrovsky claims relied on opponent identification (USA, FLA) and game context, not on goalie-specific stats. `opp_ga_per_game` captures team defensive quality — system and goalie combined — and cannot isolate the goalie.
 
-**Impact.** Phase 3's `opp_ga_per_game` captures team defensive quality (system + goalie combined) but cannot isolate the goalie. If FLA's defensive system without Bobrovsky would still suppress McDavid, the dataset cannot tell us.
+**What was done.** The pipeline now records the opposing starting goalie from every boxscore (`opp_goalie_id`, `opp_goalie_name`) and fetches each of those goalies' own game logs into `data/goalie_game_logs.csv`. From those, `opp_goalie_sv_pct` is the starter's save percentage over the 365 days *before* the game — never including the game itself — shrunk toward the league rate with a 1,000-shot prior so a backup's hot fortnight does not read as elite. It is a feature in the Phase 3 model.
 
-**What would resolve it.** Per-game starting-goalie data (NHL API boxscore endpoint) joined to per-season goalie save% and high-danger save%. Modest engineering, would substantially sharpen H3.
+**What it found.** Nothing, and robustly so:
+
+| Check | Result |
+| --- | --- |
+| Ridge coefficient (full 463-game fit) | **−0.010** — the smallest of eleven features |
+| Same, with the prior at 0 / 300 / 3,000 shots | +0.027 / −0.012 / −0.002 — the sign flips with a tuning constant |
+| 5-fold cross-validated R², with vs without | −0.062 vs −0.053 — it makes out-of-sample fit slightly *worse* |
+| Every other coefficient | Unchanged (Finals label still +0.051; `opp_ga_per_game` +0.091 → +0.087) |
+
+The Finals rows point the same way. Going into both Finals, Bobrovsky's prior-year save percentage was about **.910 (2024) and .904 (2025)** — league average, not elite. McDavid scored 1.57 pts/game against him in 2024 and 1.17 in 2025.
+
+**What that means for H3.** "An elite goaltender suppresses McDavid" is not supported at the goalie level. Whatever suppression the data shows lives in team defence (`opp_ga_per_game`), not in who was in net.
+
+**What remains.**
+
+- **Raw save percentage is a weak measure of goalie skill.** It does not adjust for shot quality — a goalie behind a system that allows only perimeter shots looks better than he is. The measure that does, goals saved above expected, needs expected-goals data, which is Limitation #4. High-danger save% is not in the NHL API either.
+- **The feature barely varies.** Across McDavid's opponents its standard deviation is .0064. A real effect of modest size would be hard for any model to find in that range.
+- **International games are unaffected.** They have no boxscore, and the model is NHL-only (#6). The Hellebuyck / Team USA sample is still n=3.
 
 ---
 
@@ -114,7 +131,7 @@ McDavid is **mid-pack**, not exceptional in either direction. Two peers fell fur
 
 **The limitation.** The `rest_days` feature is the gap between consecutive games *in the dataset*, not the actual gap on Edmonton's calendar. If McDavid sat out a game (rest, injury, healthy scratch), the feature treats the next game as if no rest occurred between his appearances.
 
-**Impact.** Small, but larger than it used to look. This entry previously cited a `rest_days` coefficient of −0.008 and called it negligible. That number was an artifact of the offseason being counted as rest, which inflated the feature's standard deviation to 11.7 and flattened the coefficient toward zero. With the feature reset at each season boundary the coefficient is **−0.052** — still small, no longer negligible, and now worth measuring correctly. McDavid rarely sits, so the misstatement is rare; it is a misstatement all the same.
+**Impact.** Small, but larger than it used to look. This entry previously cited a `rest_days` coefficient of −0.008 and called it negligible. That number was an artifact of the offseason being counted as rest, which inflated the feature's standard deviation to 11.7 and flattened the coefficient toward zero. With the feature reset at each season boundary the coefficient is **−0.081** — still small, no longer negligible, and now worth measuring correctly. McDavid rarely sits, so the misstatement is rare; it is a misstatement all the same.
 
 **What would resolve it.** Pulling Edmonton's full team schedule and computing rest from team-game-to-team-game, then joining to McDavid's game log. Trivial via the NHL API.
 

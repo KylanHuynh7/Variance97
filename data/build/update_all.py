@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from apply_features import apply_features  # type: ignore
 from fetch_boxscores import enrich_rows  # type: ignore
+from fetch_goalie_logs import build_goalie_logs  # type: ignore
 from fetch_player_log import (  # type: ignore
     PLAYERS,
     SUBJECT,
@@ -55,7 +56,7 @@ DATA_DIR = Path(__file__).resolve().parent.parent
 SOURCE_COLUMNS = [
     "date", "opponent", "goals", "assists", "points", "plus_minus",
     "SOG", "TOI", "result", "team_score", "opp_score", "game_number",
-    "game_context", "season",
+    "game_context", "season", "opp_goalie_id", "opp_goalie_name",
 ]
 
 
@@ -91,10 +92,21 @@ def _refresh_player(player: Player, source_csv: Path, rebuild: bool = False) -> 
     # out before enrichment on every subsequent run. Downstream that null
     # becomes the string "None", which compute_elimination doesn't count as a
     # loss -- so one blip quietly corrupts a whole series' elimination flags.
+    #
+    # A row without an opposing goalie is stale in the same way. That is also
+    # the backfill: logs written before the goalie columns existed have every
+    # row missing them, so the first run after the upgrade re-enriches the
+    # whole history without needing --rebuild.
     stale_dates: set[str] = set()
-    if len(existing) and "result" in existing.columns:
-        stale = existing[existing["result"].isna()]
-        stale_dates = set(stale["date"].astype(str))
+    if len(existing):
+        stale = pd.Series(False, index=existing.index)
+        if "result" in existing.columns:
+            stale |= existing["result"].isna()
+        if "opp_goalie_id" in existing.columns:
+            stale |= existing["opp_goalie_id"].isna()
+        else:
+            stale[:] = True
+        stale_dates = set(existing.loc[stale, "date"].astype(str))
 
     # Fetch all configured seasons; we'll filter to truly new games below.
     fetched = fetch_player_log(player, seasons=season_ids())
@@ -116,7 +128,14 @@ def _refresh_player(player: Player, source_csv: Path, rebuild: bool = False) -> 
     new_df = pd.DataFrame(batch)
     # Drop columns that aren't part of the source schema (e.g. gameId,
     # home_away if not used downstream). Keep the source schema canonical.
-    source_cols = list(existing.columns) if len(existing) else SOURCE_COLUMNS
+    # The existing file's order wins, but a column added to the schema since it
+    # was written is appended rather than dropped.
+    if len(existing):
+        source_cols = list(existing.columns) + [
+            c for c in SOURCE_COLUMNS if c not in existing.columns
+        ]
+    else:
+        source_cols = SOURCE_COLUMNS
     for col in source_cols:
         if col not in new_df.columns:
             new_df[col] = None
@@ -124,10 +143,13 @@ def _refresh_player(player: Player, source_csv: Path, rebuild: bool = False) -> 
 
     merged = pd.concat([existing, new_df], ignore_index=True, sort=False)
     merged = merged.drop_duplicates(subset=["date"], keep="last").reset_index(drop=True)
+    # Without this a single missing id turns the column float, and the CSV
+    # gains a ".0" on every goalie.
+    merged["opp_goalie_id"] = pd.to_numeric(merged["opp_goalie_id"]).astype("Int64")
     merged.to_csv(source_csv, index=False)
     print(f"  wrote {len(merged)} rows -> {source_csv.name} (+{added})")
 
-    still_missing = int(merged["result"].isna().sum()) if "result" in merged else 0
+    still_missing = int((merged["result"].isna() | merged["opp_goalie_id"].isna()).sum())
     if still_missing:
         print(f"  WARNING: {still_missing} row(s) still missing boxscore data; "
               f"they will be retried on the next run")
@@ -148,6 +170,13 @@ def main(rebuild: set[str] | None = None) -> None:
         for key, player in PLAYERS.items()
     }
 
+    print(f"\n[goalies] refreshing goalie_game_logs.csv")
+    n = build_goalie_logs(
+        DATA_DIR / "goalie_game_logs.csv",
+        [nhl_log_path(key, DATA_DIR) for key in PLAYERS],
+    )
+    print(f"  wrote {n} rows.")
+
     print(f"\n[team stats] refreshing opponent_team_stats.csv")
     n = build_team_stats(DATA_DIR / "opponent_team_stats.csv")
     print(f"  wrote {n} rows.")
@@ -164,6 +193,7 @@ def main(rebuild: set[str] | None = None) -> None:
         apply_features(
             nhl_source_path=source,
             team_stats_path=DATA_DIR / "opponent_team_stats.csv",
+            goalie_logs_path=DATA_DIR / "goalie_game_logs.csv",
             international_path=intl,
             out_path=clean_log_path(key, DATA_DIR),
         )

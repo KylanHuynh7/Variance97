@@ -19,7 +19,7 @@ So the working thesis isn't "McDavid underperforms in championship-level games."
 
 1. **H1 — Individual:** McDavid's personal output collapses in championship-level games.
 2. **H2 — Team Construction:** Edmonton's supporting cast fails around him.
-3. **H3 — Matchup-Specific:** elite goaltender + elite defensive system specifically suppresses him (Bobrovsky/FLA, Hellebuyck/USA).
+3. **H3 — Matchup-Specific:** elite goaltender + elite defensive system specifically suppresses him (Bobrovsky/FLA, Hellebuyck/USA). The goaltender half has now been tested directly in the NHL games, and is not supported — see Phase 3.
 
 ### The 2025–26 first round, stated up front
 
@@ -40,10 +40,12 @@ Reframed from "logistic regression predicting pointless games" to **Ridge regres
 
 The model trains on 463 games. It used to train on 444: nineteen games against Vegas were being silently dropped, because McDavid's log — the one file predating the API pipeline — spelled the opponent `VEG` while the standings table says `VGK`, so those rows joined no opponent strength and `_prepare` discarded them. That log also carried thirteen games with impossible scores (a 2–2 win). Both were repaired by re-fetching it from the API; see Phase 4.
 
+**The goalie was tested directly, and carries nothing.** `opp_goalie_sv_pct` is the opposing starter's save percentage over the 365 days before each game, shrunk toward league average. Its coefficient is **−0.010**, the smallest in the model; its sign flips with the amount of shrinkage; and it makes 5-fold cross-validated fit slightly worse. Going into both Finals, Bobrovsky's prior-year save percentage was league average (~.905–.910). So H3's "elite goaltender" form is not supported at the goalie level — the suppression the model finds lives in team defence. Raw save percentage ignores shot quality, so goals saved above expected (which needs xG data) remains the stronger test; see LIMITATIONS #5.
+
 Context is categorical, so one level is the baseline and carries no column: that level is `regular_season`, pinned explicitly in `_prepare` rather than left to `get_dummies` to pick. Every `game_context_*` coefficient is therefore a difference from an average regular-season game. `rest_days` and `rolling_pts_5` reset at each season boundary, so a 150-day offseason is never counted as rest or as recent form. The "Stanley Cup Finals effect" was largely a late-series + tough-defense effect masquerading as a context label.
 
 ### Phase 4 — NHL API Pipeline (`04_nhl_api_pipeline.ipynb`)
-Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of every registry player's `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` are populated), standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
+Self-updating dataset off `api-web.nhle.com`. `data/build/update_all.py` orchestrates: cursor-based incremental fetch of every registry player's `gameLog`, per-new-game boxscore enrichment (so `result`/`team_score`/`opp_score` and the opposing starting goalie are populated), game logs for every opposing goalie into `goalie_game_logs.csv`, standings refresh into `opponent_team_stats.csv`, concat of the manual `international_games.csv`, and a full re-run of `apply_features.py` so `is_elimination_game`, `rolling_pts_5`, `rest_days`, `is_back_to_back`, and `opp_ga_per_game` stay consistent with the latest rows. Idempotent — reruns with no new games report `+0` and exit cleanly, so it's safe on a daily cron.
 
 ```bash
 python3 data/build/update_all.py                  # incremental, every player
@@ -72,6 +74,7 @@ The dataset is built and refreshed by the Phase 4 pipeline (`data/build/`). Sour
 | `data/<peer>_nhl_log.csv` | NHL API | One per peer — `mackinnon`, `draisaitl`, `eichel`, `matthews`, `crosby`. Same pipeline, same schema. |
 | `data/international_games.csv` | Manual entry | Four Nations / Olympics rows — the NHL API doesn't cover these. |
 | `data/opponent_team_stats.csv` | NHL API standings | Per-season GA/game for every team. Refreshed each pipeline run. |
+| `data/goalie_game_logs.csv` | NHL API | Game-by-game shots and goals against for every goalie who started against a tracked player. Source of `opp_goalie_sv_pct`. |
 | `data/mcdavid_game_log_clean.csv` | Pipeline output | Merged + featured (NHL + international). Consumed by Phases 1–3. |
 | `data/<peer>_game_log_clean.csv` | Pipeline output | Featured (NHL only), one per peer. Consumed by the peer comparison. |
 
@@ -168,7 +171,8 @@ Both read the same clean CSVs from `data/`. Phase 4's pipeline keeps those fresh
 data/
     build/
         fetch_player_log.py        # gameLog fetcher + the player registry
-        fetch_boxscores.py         # adds result/team_score/opp_score
+        fetch_boxscores.py         # adds result/team_score/opp_score + opposing starter
+        fetch_goalie_logs.py       # opposing goalies' own game logs
         fetch_team_stats.py        # NHL standings -> team GA/game
         apply_features.py          # is_elimination_game + ML features
         seasons.py                 # season ids/labels, derived from the clock
@@ -178,6 +182,7 @@ data/
     <player>_game_log_clean.csv    # pipeline output (analysis input)
     international_games.csv        # manual entry (McDavid only)
     opponent_team_stats.csv        # team GA/game by season
+    goalie_game_logs.csv           # opposing goalies, game by game
 notebooks/
     01_data_loading_and_exploration.ipynb
     02_statistical_validation.ipynb

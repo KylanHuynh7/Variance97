@@ -30,8 +30,35 @@ def fetch_boxscore(game_id: int) -> dict:
     return _request_json(f"https://api-web.nhle.com/v1/gamecenter/{game_id}/boxscore")
 
 
+def _toi_seconds(toi: str) -> int:
+    if not toi or ":" not in toi:
+        return 0
+    m, s = toi.split(":")
+    return int(m) * 60 + int(s)
+
+
+def opposing_starter(boxscore: dict, opp_side: str) -> dict:
+    """The goalie who started for the opponent: {opp_goalie_id, opp_goalie_name}.
+
+    The boxscore flags the starter explicitly. If no goalie carries the flag,
+    fall back to whoever played the most minutes rather than leave the row
+    without a goalie -- a missing goalie is retried on every run, so a game
+    the API simply doesn't flag would otherwise be refetched forever.
+    """
+    goalies = boxscore.get("playerByGameStats", {}).get(opp_side, {}).get("goalies", [])
+    if not goalies:
+        raise ValueError(f"no goalies listed for {opp_side}")
+    starters = [g for g in goalies if g.get("starter")]
+    goalie = starters[0] if starters else max(goalies, key=lambda g: _toi_seconds(g.get("toi", "")))
+    return {
+        "opp_goalie_id": int(goalie["playerId"]),
+        "opp_goalie_name": goalie["name"]["default"],
+    }
+
+
 def derive_outcome(boxscore: dict, opponent_abbrev: str) -> dict:
-    """Return {result, team_score, opp_score} from the player's perspective.
+    """Return {result, team_score, opp_score, opp_goalie_id, opp_goalie_name}
+    from the player's perspective.
 
     Identified by elimination against the opponent rather than by matching the
     player's own team, so a mid-season trade needs no special handling.
@@ -40,8 +67,10 @@ def derive_outcome(boxscore: dict, opponent_abbrev: str) -> dict:
     away = boxscore["awayTeam"]
     if away["abbrev"] == opponent_abbrev:
         team_score, opp_score = home["score"], away["score"]
+        opp_side = "awayTeam"
     elif home["abbrev"] == opponent_abbrev:
         team_score, opp_score = away["score"], home["score"]
+        opp_side = "homeTeam"
     else:
         # The opponent came from this player's own game log, so it should
         # always be one of the two teams. Guard rather than silently pick.
@@ -53,11 +82,13 @@ def derive_outcome(boxscore: dict, opponent_abbrev: str) -> dict:
         "result": "W" if team_score > opp_score else "L",
         "team_score": team_score,
         "opp_score": opp_score,
+        **opposing_starter(boxscore, opp_side),
     }
 
 
 def enrich_rows(rows: Iterable[dict], sleep_between: float = 0.15) -> list[dict]:
-    """Fill result, team_score, opp_score on rows that don't already have them.
+    """Fill result, team_score, opp_score and the opposing starting goalie on
+    rows that don't already have them.
 
     Idempotent: rows with non-null result are skipped.
     """

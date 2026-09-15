@@ -28,11 +28,16 @@ export type Game = {
   is_back_to_back: boolean;
   rolling_pts_5: number | null;
   opp_ga_per_game: number | null;
+  /** Opposing starter. `null` for international games, which have no boxscore. */
+  opp_goalie_name: string | null;
+  /** His save% over the prior 365 days, shrunk toward league rate. */
+  opp_goalie_sv_pct: number | null;
 };
 
 export type ModelGame = {
   date: string;
   opponent: string;
+  opp_goalie_name: string | null;
   game_context: string;
   points: number;
   x: number[];
