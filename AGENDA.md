@@ -31,6 +31,9 @@ stays. For *how* and *why*, see `METHODOLOGY.md`.
   bugs are all caught.
 - **Docs restructured.** `TRACING.md` was split into `METHODOLOGY.md` (grows)
   and this file (rewritten each session).
+- **Streamlit removed.** The static site is the only dashboard. `--verify` now
+  checks the exported model against sklearn's predictions instead of against
+  a second copy. The Codespaces devcontainer runs the pipeline and site instead.
 
 ---
 
@@ -61,6 +64,10 @@ stays. For *how* and *why*, see `METHODOLOGY.md`.
   correctly. Trivial via the team schedule endpoint.
 - International team strength is unmodelled, which keeps Phase 3 NHL-only
   (LIMITATIONS #6).
+- MacKinnon's source and clean CSVs carry two columns the other players' files
+  don't (`gameId`, `home_away`), left over from before the shared schema.
+  Harmless, since nothing reads them, but a cleanup via `--rebuild mackinnon`
+  would align the schema.
 
 ### Waiting on Kylan
 

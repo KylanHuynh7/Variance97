@@ -1,18 +1,16 @@
 """
 Export the web bundle consumed by the static dashboard in `web/`.
 
-The Streamlit app (`app/`) computes everything at request time: CSV reads,
-groupby aggregations, and a Ridge fit. The static site can't run Python, so
-this script does all of that once at build time and writes the result to
+The static site can't run Python, so this script does every CSV read, groupby
+aggregation and the Ridge fit once, at build time, and writes the result to
 `web/public/data.json`.
 
 Run it after the Phase 4 pipeline (`scripts/run_update.sh` does both), then
 commit the JSON — Vercel redeploys on push.
 
-The model section mirrors `app/components/model.py` exactly (same feature
-list, same _prepare filtering, same Ridge(alpha=1.0) on standardized
-features). It's duplicated rather than imported because that module depends
-on streamlit. `--verify` checks the two stay in agreement.
+This is the only copy of the model. `--verify` checks that the exported
+scaler, coefficients and intercept reproduce sklearn's own predictions under
+the arithmetic the browser uses.
 """
 from __future__ import annotations
 
@@ -112,7 +110,7 @@ def games_to_records(df: pd.DataFrame) -> list[dict]:
 
 
 def prepare(df: pd.DataFrame):
-    """Identical to app/components/model.py::_prepare."""
+    """Filter to NHL games with every feature present; return X, y and the rows used."""
     df = df[df["game_context"].isin(NHL_CONTEXTS)].copy()
     required = ["points", "opp_ga_per_game", "rest_days", "rolling_pts_5",
                 "opp_goalie_sv_pct"]
@@ -342,42 +340,43 @@ def build_bundle() -> dict:
     }
 
 
-def verify_against_streamlit_model(bundle: dict) -> None:
-    """Confirm the duplicated training code still matches app/components/model.py."""
-    import sys
-    sys.path.insert(0, str(REPO_ROOT / "app"))
-    from components import model as st_model  # noqa: E402  (needs streamlit installed)
+def verify_bundle(bundle: dict) -> None:
+    """Confirm the exported model reproduces sklearn's own predictions.
 
+    The browser rebuilds every prediction from the exported scaler,
+    coefficients and intercept (web/lib/data.ts::perGameContributions). If
+    rounding, column order or a coefficient lookup ever broke that arithmetic,
+    the Feature Contributions page would show wrong decompositions with no
+    error anywhere. This refits independently and compares every game.
+    """
     mcdavid = load_games("mcdavid_game_log_clean.csv")
-    X_ref, y_ref, _ = st_model._prepare(mcdavid)
-    X_ours, y_ours, _ = prepare(mcdavid)
-
-    assert list(X_ref.columns) == list(X_ours.columns), "feature columns diverged"
-    assert np.allclose(X_ref.values, X_ours.values), "feature matrix diverged"
-    assert np.allclose(y_ref.values, y_ours.values), "target diverged"
-
+    X, y, _ = prepare(mcdavid)
     pipe = Pipeline([("scale", StandardScaler()),
-                     ("ridge", Ridge(alpha=1.0, random_state=42))])
-    pipe.fit(X_ref, y_ref)
-    ref_coef = pipe.named_steps["ridge"].coef_
-    ours = {c["feature"]: c["coefficient"] for c in bundle["model"]["coefficients"]}
-    for name, c in zip(X_ref.columns, ref_coef):
-        assert abs(ours[name] - float(c)) < 1e-5, f"coefficient diverged: {name}"
-    assert abs(bundle["model"]["intercept"]
-               - float(pipe.named_steps["ridge"].intercept_)) < 1e-5
-    print("verify: export matches app/components/model.py")
+                     ("ridge", Ridge(alpha=1.0, random_state=42))]).fit(X, y)
+
+    m = bundle["model"]
+    assert m["feature_names"] == list(X.columns), "feature columns diverged"
+    assert len(m["games"]) == len(X), "exported game count diverged"
+    coef = {c["feature"]: c["coefficient"] for c in m["coefficients"]}
+    x = np.array([g["x"] for g in m["games"]])
+    z = (x - np.array(m["scaler_mean"])) / np.array(m["scaler_scale"])
+    browser = m["intercept"] + z @ np.array([coef[f] for f in m["feature_names"]])
+    worst = float(np.max(np.abs(browser - pipe.predict(X))))
+    assert worst < 1e-4, f"exported model is off sklearn's predictions by up to {worst:.2e}"
+    print(f"verify: exported model reproduces sklearn on all {len(X)} games "
+          f"(max error {worst:.1e})")
 
 
 def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--verify", action="store_true",
-                        help="cross-check the fit against the Streamlit model module")
+                        help="check the exported model reproduces sklearn's predictions")
     args = parser.parse_args()
 
     bundle = build_bundle()
     if args.verify:
-        verify_against_streamlit_model(bundle)
+        verify_bundle(bundle)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(bundle, separators=(",", ":")))
