@@ -56,13 +56,10 @@ python3 data/build/update_all.py --rebuild mcdavid  # re-fetch one player in ful
 
 Which side of a boxscore is "the player's team" is decided by elimination against the opponent in the row, not by a per-player team abbreviation, so a mid-season trade needs no special handling.
 
-### Phase 5 — Interactive Dashboard (`web/`, with `app/` as fallback)
-Six-page dashboard built around the reframed thesis, not a point-prediction toy. It opens with the headline (Four Nations win, Olympic record, and McDavid mid-pack in the peer distribution). Pages: **Three Acts** (Playoffs / Four Nations / Olympics, interactive), **Peer Comparison** (the strongest finding: where McDavid's Finals decline sits in a five-peer distribution, plus a head-to-head against any one of them), **Feature Contributions** (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), **Limitations** (Florida confound, Hellebuyck n=3), and **Pipeline Status** (latest game date, row count, CSV mtime).
+### Phase 5 — Interactive Dashboard (`web/`)
+Six-page dashboard built around the reframed thesis, not a point-prediction toy. It opens with the headline (Four Nations win, Olympic record, and McDavid mid-pack in the peer distribution). Pages: **Three Acts** (Playoffs / Four Nations / Olympics, interactive), **Peer Comparison** (the strongest finding: where McDavid's Finals decline sits in a five-peer distribution, plus a head-to-head against any one of them), **Feature Contributions** (per-game Ridge coefficient × standardized feature decomposition — explicitly *not* a "will-he-score-tonight" predictor), **Limitations** (Florida confound, Hellebuyck n=3), and **Pipeline Status** (latest game date, row count, when each data file last changed).
 
-The dashboard exists in two forms, both driven by the same clean CSVs. No API calls happen from either — Phase 4 owns all external I/O.
-
-- **`web/` — the deployed site (Next.js, static).** What's live. Every number, including the Ridge fit, is precomputed at build time by `data/build/export_web.py`, so the site is pure static files: no Python at request time and no cold start.
-- **`app/` — the original Streamlit app.** Kept as a working local view and as the contingency path if the hosted site is ever unavailable. `export_web.py --verify` cross-checks its model against the exported one, so the two can't silently drift.
+It is a static Next.js site. Every number, including the Ridge fit, is precomputed at build time by `data/build/export_web.py`, so the site is pure static files: no Python at request time, no cold start, and no API calls — Phase 4 owns all external I/O. The dashboard was first built in Streamlit; that version was retired once the static site replaced it, and remains in git history.
 
 ## Data
 
@@ -158,25 +155,16 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-`web/public/data.json` is committed, so the site builds without Python. Regenerate it after a data refresh with `npm run data` (or the pipeline wrapper below).
+`web/public/data.json` is committed, so the site builds without Python. Regenerate it after a data refresh with `npm run data` (or `scripts/run_update.sh`).
 
-### Run the Streamlit fallback
-
-Kept as the contingency path and for local iteration on the analysis:
-
-```bash
-pip install -r requirements.txt
-streamlit run app/Home.py
-```
-
-Both read the same clean CSVs from `data/`. Phase 4's pipeline keeps those fresh.
+The Python side (pipeline and notebooks) needs `pip install -r requirements.txt`.
 
 ## Tech stack
 
 - Python (`pandas`, `numpy`, `scipy`, `scikit-learn`)
 - Jupyter (analysis notebooks)
-- Next.js (static export) + Plotly.js (deployed dashboard), hosted on Vercel
-- Streamlit + Plotly (fallback dashboard)
+- Next.js (static export) + Plotly.js (dashboard), hosted on Vercel
+- GitHub Actions (daily data refresh)
 - NHL public API (`api-web.nhle.com`)
 
 ## Repository structure
@@ -208,11 +196,6 @@ web/                               # deployed dashboard (Next.js static export)
     components/                    # Plot wrapper, tabs, UI primitives
     lib/                           # typed data access, chart builders, prose
     public/data.json               # build-time bundle (committed)
-app/                               # Streamlit fallback dashboard
-    Home.py                        # entry point (headline)
-    pages/                         # Three Acts, Peer Comparison, ...
-    components/                    # data loaders, charts, model, narrative
-.streamlit/config.toml             # theme + server config
 .github/workflows/
     update-data.yml                # daily refresh: fetch, check, export, push
 scripts/

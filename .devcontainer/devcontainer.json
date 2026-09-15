@@ -1,33 +1,25 @@
 {
-  "name": "Python 3",
-  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
+  // GitHub Codespaces / VS Code dev container for Variance97.
+  // Python for the data pipeline and notebooks, Node for the Next.js site.
+  "name": "Variance97",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" }
+  },
   "customizations": {
     "codespaces": {
-      "openFiles": [
-        "README.md",
-        "app/Home.py"
-      ]
+      "openFiles": ["AGENDA.md", "README.md"]
     },
     "vscode": {
-      "settings": {},
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-      ]
+      "extensions": ["ms-python.python", "ms-python.vscode-pylance", "ms-toolsai.jupyter"]
     }
   },
-  "updateContentCommand": "[ -f packages.txt ] && sudo apt update && sudo apt upgrade -y && sudo xargs apt install -y <packages.txt; [ -f requirements.txt ] && pip3 install --user -r requirements.txt; pip3 install --user streamlit; echo '✅ Packages installed and Requirements met'",
-  "postAttachCommand": {
-    "server": "streamlit run app/Home.py --server.enableCORS false --server.enableXsrfProtection false"
-  },
+  "updateContentCommand": "pip3 install --user -r requirements.txt && cd web && npm ci",
+  "forwardPorts": [3000],
   "portsAttributes": {
-    "8501": {
-      "label": "Application",
-      "onAutoForward": "openPreview"
+    "3000": {
+      "label": "Site (cd web && npm run dev)",
+      "onAutoForward": "notify"
     }
-  },
-  "forwardPorts": [
-    8501
-  ]
+  }
 }

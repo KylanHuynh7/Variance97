@@ -1,8 +1,8 @@
 /**
  * Typed access to the build-time data bundle.
  *
- * `public/data.json` is written by `data/build/export_web.py` from the same
- * clean CSVs the Streamlit app reads. Everything here runs in server
+ * `public/data.json` is written by `data/build/export_web.py` from the clean
+ * CSVs in `data/`. Everything here runs in server
  * components at build time, so pages ship only the small derived numbers they
  * actually render — not the whole bundle.
  */
@@ -196,9 +196,9 @@ export function contextMean(
  *
  *   pred = intercept + sum_i coef_i * (x_i - mean_i) / scale_i
  *
- * Each term is that feature's contribution. Same decomposition as
- * app/components/model.py::per_game_contributions, just done in the browser
- * from the exported scaler and coefficients.
+ * Each term is that feature's contribution, computed here from the exported
+ * scaler and coefficients. `export_web.py --verify` checks that this
+ * arithmetic reproduces sklearn's own predictions.
  */
 export function perGameContributions(m: Model, rowIdx: number) {
   const coefByName = new Map(

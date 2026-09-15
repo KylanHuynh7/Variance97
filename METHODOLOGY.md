@@ -191,10 +191,12 @@ Ridge regression on points per game, on standardised features.
 | **Full refit for the site; chronological 80/20 split in the notebook** | The site reports coefficients (full data); the notebook reports held-out error (a split). Hence +0.051 vs +0.04 for the Finals label |
 | **Presented as attribution, never prediction** | Held-out R² is about zero and below the predict-the-mean baseline. The site must not offer a "will he score tonight" widget |
 
-**The model exists twice:** `data/build/export_web.py::prepare` for the static
-site and `app/components/model.py::_prepare` for Streamlit. They are duplicated
-because the Streamlit module imports streamlit. `export_web.py --verify` asserts
-identical feature matrices, coefficients and intercept.
+**One copy of the model**, in `data/build/export_web.py::prepare`. The browser
+rebuilds each prediction from the exported scaler, coefficients and intercept,
+and `export_web.py --verify` asserts that arithmetic reproduces sklearn's own
+predictions on every game. *Superseded 2026-09-14:* the model used to exist
+twice, with a second copy in the Streamlit app, and `--verify` asserted the two
+agreed. Removing Streamlit removed the duplicate.
 
 ---
 
@@ -216,7 +218,7 @@ identical feature matrices, coefficients and intercept.
 | Choice | Why |
 | --- | --- |
 | **Static Next.js site on Vercel** (`web/`) | Every number, including the Ridge fit, is precomputed into `web/public/data.json`. No Python at request time, no cold start. *Superseded:* Streamlit Community Cloud, `6776dc7` |
-| **Streamlit kept as a fallback** (`app/`) | A working local view and a contingency if hosting fails. Kept in sync by `--verify` |
+| ~~**Streamlit kept as a fallback**~~ (`app/`) | *Superseded 2026-09-14: removed.* The static site had fully replaced it, and keeping it meant a second copy of the model and every page to keep in sync. Recoverable from git history; last present at `1b39f82` |
 | **`data.json` is committed** | The site builds without Python; Vercel just runs `next build` |
 | **Daily GitHub Action** (`.github/workflows/update-data.yml`) | Runs 14:00 UTC: `update_all` → `check_data` → `export_web --verify`, then commits and pushes **only if a CSV changed**. The push redeploys the site |
 | **Push straight to `main`, not a pull request** | Simplest for a single-maintainer project; `check_data.py` is the guard instead of a human review |
@@ -230,18 +232,9 @@ identical feature matrices, coefficients and intercept.
 Run these before claiming anything works:
 
 - `python3 data/build/check_data.py` — the publish gate (§7).
-- `python3 data/build/export_web.py --verify` — both model copies agree.
+- `python3 data/build/export_web.py --verify` — the exported model reproduces
+  sklearn's predictions under the browser's arithmetic.
 - `cd web && npm run build` — typechecks and prerenders every route.
-- Streamlit pages actually executing. An HTTP 200 proves nothing, because the
-  script only runs when a client connects:
-
-```python
-from streamlit.testing.v1 import AppTest
-for p in ["app/Home.py", "app/pages/1_Three_Acts.py", "app/pages/2_Peer_Comparison.py",
-          "app/pages/3_Feature_Contributions.py", "app/pages/4_Limitations.py",
-          "app/pages/5_Pipeline_Status.py"]:
-    print(p, len(AppTest.from_file(p, default_timeout=180).run().exception))  # all 0
-```
 
 - **After a pipeline change:** snapshot `data/*.csv` first, then confirm every
   pre-existing column is unchanged afterwards. This is how the goalie backfill
@@ -320,7 +313,7 @@ stale in two places within one session. That is why this file and
 | Season maths | `data/build/seasons.py` |
 | Feature definitions and goalie constants | `data/build/apply_features.py` |
 | Publish gate | `data/build/check_data.py` |
-| The model, twice | `data/build/export_web.py::prepare`, `app/components/model.py::_prepare` |
+| The model | `data/build/export_web.py::prepare`; browser arithmetic in `web/lib/data.ts::perGameContributions` |
 | Chart palette | `web/lib/charts.ts` (docstring), tokens in `web/app/globals.css` |
 | Daily refresh | `.github/workflows/update-data.yml` |
 
@@ -344,4 +337,5 @@ commit holds the detail.
 | 2026-09-12 | `dce542d` | Five-peer distribution. McDavid mid-pack; "half a peer's decline" retracted; VEG/VGK and impossible-score repairs |
 | 2026-09-14 | `74b4e14` | Opposing goalie recorded and tested: no signal |
 | 2026-09-14 | `0de3005` | Daily GitHub Action, `check_data.py` publish gate, git-dated Pipeline Status |
-| 2026-09-14 | — | `TRACING.md` split into this file and `AGENDA.md` |
+| 2026-09-14 | `1b39f82` | `TRACING.md` split into this file and `AGENDA.md`; Draisaitl's Finals drop corrected to −0.60 |
+| 2026-09-14 | — | Streamlit app removed; the static site is the only dashboard and the model has one copy |
