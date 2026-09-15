@@ -338,4 +338,4 @@ commit holds the detail.
 | 2026-09-14 | `74b4e14` | Opposing goalie recorded and tested: no signal |
 | 2026-09-14 | `0de3005` | Daily GitHub Action, `check_data.py` publish gate, git-dated Pipeline Status |
 | 2026-09-14 | `1b39f82` | `TRACING.md` split into this file and `AGENDA.md`; Draisaitl's Finals drop corrected to −0.60 |
-| 2026-09-14 | — | Streamlit app removed; the static site is the only dashboard and the model has one copy |
+| 2026-09-14 | `ec9baa5` | Streamlit app removed; the static site is the only dashboard, the model has one copy, and `--verify` checks the export against sklearn |
