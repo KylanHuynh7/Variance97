@@ -457,3 +457,5 @@ date,opponent,goals,assists,points,plus_minus,SOG,TOI,result,team_score,opp_scor
 2026-04-26,ANA,0,1,1,-1,2,21.75,L,3,4,4.0,first_round,2025-26,8480843,L. Dostal,False,2.0,False,1.6,3.5062,0.8908654427102126
 2026-04-28,ANA,2,0,2,1,4,23.366666666666667,W,4,1,5.0,first_round,2025-26,8480843,L. Dostal,True,2.0,False,1.6,3.5062,0.890801933828131
 2026-04-30,ANA,0,1,1,-1,1,24.016666666666666,L,2,5,6.0,first_round,2025-26,8480843,L. Dostal,True,2.0,False,1.8,3.5062,0.8900628362067791
+2026-09-29,VAN,0,1,1,-1,5,21.25,L,5,6,,regular_season,2026-27,8480947,K. Lankinen,False,,False,,7.0,0.8845757269889022
+2026-10-01,VAN,2,1,3,3,5,20.316666666666663,W,9,7,,regular_season,2026-27,8480947,K. Lankinen,False,2.0,False,1.0,7.0,0.8842162528923799
