@@ -451,3 +451,4 @@ gameId,date,opponent,goals,assists,points,plus_minus,SOG,TOI,result,team_score,o
 2026020234,2026-11-02,CHI,0,1,1,1,2,19.416666666666668,W,5,2,,regular_season,2026-27,False,R,8481519,S. Knight
 2026020244,2026-11-03,CBJ,0,2,2,-3,1,19.466666666666665,L,2,7,,regular_season,2026-27,False,R,8475660,C. Talbot
 2026020261,2026-11-05,NSH,0,0,0,0,1,24.0,L,2,3,,regular_season,2026-27,False,H,8481020,J. Annunen
+2026020274,2026-11-07,DET,1,2,3,1,4,20.283333333333335,W,4,0,,regular_season,2026-27,False,H,8480193,D. Tarasov
